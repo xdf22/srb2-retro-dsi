@@ -1242,7 +1242,6 @@ failure:
 //                             MOVIE MODE
 // ==========================================================================
 
-#if NUMSCREENS > 2
 static inline moviemode_t M_StartMovieGIF(const char *pathname)
 {
 #ifdef HAVE_ANIGIF
@@ -1267,7 +1266,6 @@ static inline moviemode_t M_StartMovieGIF(const char *pathname)
 	return MM_OFF;
 #endif
 }
-#endif
 
 void M_StartMovie(void)
 {

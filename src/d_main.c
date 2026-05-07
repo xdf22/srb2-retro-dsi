@@ -779,7 +779,7 @@ static void IdentifyVersion(void)
 	char *srb2wad1, *srb2wad2;
 	const char *srb2waddir = NULL;
 
-#if defined (__unix__) || defined (UNIXCOMMON) || defined (SDL)
+#if defined (__unix__) || defined (UNIXCOMMON) || defined (SDL) || defined (_NDS)
 	// change to the directory where 'srb2.srb' is found
 	srb2waddir = I_LocateWad();
 #endif
@@ -857,7 +857,7 @@ static void IdentifyVersion(void)
 	D_AddFile(va(pandf,srb2waddir,"drill.dta")); //drill.dta
 	D_AddFile(va(pandf,srb2waddir,"soar.dta")); //soar.dta
 
-#if !defined (SDL) || defined (HAVE_MIXER)
+#if (!defined (SDL) || defined (HAVE_MIXER)) && !defined (_NDS)
 	{
 #if defined (DC) && 0
 		const char *musicfile = "music_dc.dta";
@@ -1375,6 +1375,10 @@ void D_SRB2Main(void)
 const char *D_Home(void)
 {
 	const char *userhome = NULL;
+
+#ifdef _NDS
+	//return "sd:/srb2retro/";
+#endif
 
 #ifdef ANDROID
 	return "/data/data/org.srb2/";

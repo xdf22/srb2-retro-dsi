@@ -65,10 +65,10 @@ boolean FIL_CheckExtension(const char *in);
 
 #ifdef HAVE_PNG
 boolean M_SavePNG(const char *filename, void *data, int width, int height, const UINT8 *palette);
+#endif
 void M_StartMovie(void);
 void M_SaveFrame(void);
 void M_StopMovie(void);
-#endif
 
 extern boolean takescreenshot;
 void M_ScreenShot(void);

@@ -25,10 +25,6 @@
 #include <windows.h>
 #endif
 
-#ifdef _NDS
-#include <nds.h>
-#endif
-
 /* 7.18.1.1  Exact-width integer types */
 #ifdef _MSC_VER
 #define UINT8 unsigned __int8
@@ -78,6 +74,17 @@ typedef long ssize_t;
 #define UINT32 unsigned long
 #define INT64  signed long long
 #define UINT64 unsigned long long
+#elif defined (_NDS)
+#define UINT8 unsigned char
+#define SINT8 signed char
+
+#define UINT16 unsigned short
+#define INT16 short
+
+#define INT32 int
+#define UINT32 unsigned int
+#define INT64  signed long long
+#define UINT64 unsigned long long
 #else
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
@@ -125,7 +132,7 @@ typedef long ssize_t;
 #endif
 #ifdef _PSP
 	#include <malloc.h>
-#elif (defined (__unix__) && !defined (MSDOS)) || defined(__APPLE__) || defined (UNIXCOMMON)
+#elif (defined (__unix__) && !defined (MSDOS)) || defined(__APPLE__) || defined (UNIXCOMMON) || defined (_NDS)
 	#undef stricmp
 	#define stricmp(x,y) strcasecmp(x,y)
 	#undef strnicmp

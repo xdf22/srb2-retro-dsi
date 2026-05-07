@@ -758,7 +758,7 @@ static SOCKET_TYPE UDP_Socket(void)
 
 	clientaddress[0].sa_family = AF_INET;
 	clientaddress[0].ip.sin_port = htons(sock_port_local);
-	clientaddress[0].ip.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //GetLocalAddress(); // my own ip
+	clientaddress[0].ip.sin_addr.s_addr = htonl(0x7f000001); //GetLocalAddress(); // my own ip
 	// setup broadcast adress to BROADCASTADDR entry
 	clientaddress[BROADCASTADDR].sa_family = AF_INET;
 	clientaddress[BROADCASTADDR].ip.sin_port = htons(sock_port_local);

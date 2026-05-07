@@ -75,6 +75,11 @@
 
 #include "i_sound.h"
 
+#ifdef _NDS
+#include <nds.h>
+boolean keyboardActive = false;
+#endif
+
 #ifdef PC_DOS
 #include <stdio.h> // for snprintf
 int	snprintf(char *str, size_t n, const char *fmt, ...);
@@ -179,6 +184,32 @@ static void M_RoomInfoMenu(INT32 choice);
 static void M_SortServerList(void);
 
 static const char *ALREADYPLAYING = "You are already playing.\nDo you wish to end the\ncurrent game? (Y/N)\n";
+
+enum
+{
+	op_screenshot_folder = 2,
+	op_movie_folder = 9,
+	op_screenshot_capture = 10,
+	op_screenshot_gif_start = 11,
+	op_screenshot_gif_end = 12,
+	op_screenshot_apng_start = 13,
+	op_screenshot_apng_end = 16,
+};
+
+void Moviemode_mode_Onchange(void) // i guess this can go here?
+{
+	INT32 i, cstart, cend;
+
+	switch (cv_moviemode.value)
+	{
+		case MM_GIF:
+			cstart = op_screenshot_gif_start;
+			cend = op_screenshot_gif_end;
+			break;
+		default:
+			return;
+	}
+}
 
 // current menudef
 menu_t *currentMenu = &MainDef;
@@ -1033,32 +1064,6 @@ static void M_Chooseroom_Onchange(void)
 		M_AlterRoomInfo();
 	}
 #endif
-}
-
-enum
-{
-	op_screenshot_folder = 2,
-	op_movie_folder = 9,
-	op_screenshot_capture = 10,
-	op_screenshot_gif_start = 11,
-	op_screenshot_gif_end = 12,
-	op_screenshot_apng_start = 13,
-	op_screenshot_apng_end = 16,
-};
-
-void Moviemode_mode_Onchange(void) // i guess this can go here?
-{
-	INT32 i, cstart, cend;
-
-	switch (cv_moviemode.value)
-	{
-		case MM_GIF:
-			cstart = op_screenshot_gif_start;
-			cend = op_screenshot_gif_end;
-			break;
-		default:
-			return;
-	}
 }
 
 //
@@ -5379,8 +5384,9 @@ menu_t VideoOptionsDef =
 
 static menuitem_t RetroMenu[] =
 {
-	{IT_CVAR | IT_STRING, NULL, "GIF Optimization", &cv_gif_optimize, 20},
-	{IT_CVAR | IT_STRING, NULL, "GIF Downscaling", &cv_gif_downscale, 30},
+	{IT_STRING|IT_CVAR,   NULL, "Squish to DS screen",      &cv_fullscreen,    10},
+	{IT_CVAR | IT_STRING, NULL, "GIF Optimization",			&cv_gif_optimize,  30},
+	{IT_CVAR | IT_STRING, NULL, "GIF Downscaling", 			&cv_gif_downscale, 40},
 };
 
 menu_t RetroDef =
@@ -7719,8 +7725,22 @@ boolean M_Responder(event_t *ev)
 		if (shiftdown && ch >= 32 && ch <= 127)
 			ch = shiftxform[ch];
 		routine(ch);
+#ifdef _NDS
+		if (!keyboardActive)
+		{
+			keyboardShow();
+			keyboardActive = true;
+		}
+#endif
 		return true;
 	}
+#ifdef _NDS
+	else if (keyboardActive)
+	{
+		keyboardHide();
+		keyboardActive = false;
+	}
+#endif
 
 	if (currentMenu->menuitems[itemOn].status == IT_MSGHANDLER)
 	{

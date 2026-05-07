@@ -246,6 +246,7 @@ endif()
 
 add_definitions(-DCMAKECONFIG)
 
+if (${SRB2_SDL2_AVAILABLE})
 add_library(SRB2Core STATIC
 	${SRB2_CORE_SOURCES}
 	${SRB2_CORE_HEADERS}
@@ -254,11 +255,16 @@ add_library(SRB2Core STATIC
 )
 
 add_subdirectory(sdl)
+endif()
 
 if(${CMAKE_SYSTEM} MATCHES Windows)
 	add_subdirectory(win32)
 endif()
 
-if(NOT ${SRB2_SDL2_AVAILABLE} AND NOT ${SRB2_WIN32_AVAILABLE})
+if (NINTENDO_DS)
+	add_subdirectory(nds)
+endif()
+
+if(NOT(${SRB2_SDL2_AVAILABLE} OR ${SRB2_WIN32_AVAILABLE} OR ${NINTENDO_DS}))
 	message(FATAL_ERROR "There are no targets available to build an SRB2 executable. :(")
 endif()

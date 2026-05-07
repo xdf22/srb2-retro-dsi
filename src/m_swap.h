@@ -22,6 +22,7 @@
 
 // Endianess handling.
 // WAD files are stored little endian.
+#ifndef _NDS
 #ifdef _BIG_ENDIAN
 
 #define SHORT(x) ((INT16)(\
@@ -42,5 +43,9 @@
 #define SHORT(x) ((INT16)(x))
 #define LONG(x)	((INT32)(x))
 #endif
+#else // no need for swapping
+#define SHORT(x) (x)
+#define LONG(x)	(x)
+#endif // ifndef _NDS
 
 #endif

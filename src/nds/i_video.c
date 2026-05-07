@@ -1,0 +1,165 @@
+// Emacs style mode select   -*- C++ -*-
+//-----------------------------------------------------------------------------
+//
+// Copyright (C) 1993-1996 by id Software, Inc.
+// Portions Copyright (C) 1998-2000 by DooM Legacy Team.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//-----------------------------------------------------------------------------
+/// \file
+/// \brief SRB2 graphics stuff for NDS
+
+
+#include "../doomdef.h"
+#include "../command.h"
+#include "../i_video.h"
+
+#include "../hardware/hw_drv.h"
+#include "../hardware/hw_main.h"
+
+#include <nds.h>
+
+rendermode_t rendermode = render_soft;
+boolean highcolor = false;
+boolean allow_fullscreen = false;
+UINT8 graphics_started = 0;
+
+consvar_t cv_vidwait = {"vid_wait", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+u16 ds_palette[256];
+
+void I_StartupGraphics(void)
+{
+	VID_SetMode(1);
+    graphics_started = true;
+}
+
+void I_ShutdownGraphics(void){}
+
+void I_SetPalette(RGBA_t *palette)
+{
+    for (int i = 0; i < 256; i++)
+    {
+        u8 r = palette[i].s.red>>3;
+        u8 g = palette[i].s.green>>3;
+        u8 b = palette[i].s.blue>>3;
+
+        ds_palette[i] = RGB15(r, g, b);
+    }
+}
+
+INT32 VID_NumModes(void)
+{
+	return 0;
+}
+
+INT32 VID_GetModeForSize(INT32 w, INT32 h)
+{
+	(void)w;
+	(void)h;
+	return 0;
+}
+
+void VID_PrepareModeList(void){}
+
+INT32 VID_SetMode(INT32 modenum)
+{
+	vid.width = 320;
+	vid.height = 200;
+	vid.bpp = 1;
+	vid.rowbytes = vid.width * vid.bpp;
+	vid.recalc = true;
+
+	if (vid.buffer) free(vid.buffer);
+	vid.buffer = NULL;
+	
+	vid.modenum = 0; 
+    vid.buffer = malloc(vid.width * vid.height);
+
+    if (!vid.buffer)
+        I_Error("Couldn't allocate video buffer");
+
+    memset(vid.buffer, 0, vid.width*vid.height);
+	
+	videoSetMode(MODE_VRAM_A);
+    vramSetBankA(VRAM_A_LCD);
+
+	return 0;
+}
+
+const char *VID_GetModeName(INT32 modenum)
+{
+	(void)modenum;
+	return NULL;
+}
+
+void I_UpdateNoBlit(void){}
+
+void I_FinishUpdate(void)
+{
+    u16* framebuffer = (u16*)VRAM_A;
+
+    const int src_w = vid.width;
+    const int src_h = vid.height;
+    const int dst_w = 256;
+    const int dst_h = 192;
+
+	SCR_DisplayTicRate();
+
+    if (cv_fullscreen.value) // squished
+    {
+        for (int y = 0; y < dst_h; y++)
+        {
+            int src_y = (y * src_h) / dst_h;
+
+            for (int x = 0; x < dst_w; x++)
+            {
+                int src_x = (x * src_w) / dst_w;
+
+                framebuffer[y * dst_w + x] =
+                    ds_palette[vid.buffer[src_y * src_w + src_x]];
+            }
+        }
+    }
+    else // cropped
+    {
+        int x_offset = (src_w - dst_w) / 2; // 32
+        int y_offset = (src_h - dst_h) / 2; // 4
+
+        for (int y = 0; y < dst_h; y++)
+        {
+            int src_y = y + y_offset;
+
+            for (int x = 0; x < dst_w; x++)
+            {
+                int src_x = x + x_offset;
+
+                framebuffer[y * dst_w + x] =
+                    ds_palette[vid.buffer[src_y * src_w + src_x]];
+            }
+        }
+    }
+}
+
+void I_UpdateNoVsync(void) {}
+
+void I_WaitVBL(INT32 count)
+{
+	(void)count;
+}
+
+void I_ReadScreen(UINT8 *scr)
+{
+	(void)scr;
+}
+
+void I_BeginRead(void){}
+
+void I_EndRead(void){}
