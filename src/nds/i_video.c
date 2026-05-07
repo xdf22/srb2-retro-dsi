@@ -71,8 +71,8 @@ void VID_PrepareModeList(void){}
 
 INT32 VID_SetMode(INT32 modenum)
 {
-	vid.width = 320;
-	vid.height = 200;
+	vid.width = 256;
+	vid.height = 192;
 	vid.bpp = 1;
 	vid.rowbytes = vid.width * vid.bpp;
 	vid.recalc = true;

@@ -42,16 +42,23 @@
 
 // Size of statusbar.
 #define ST_HEIGHT 32
+#ifdef _NDS
+#define ST_WIDTH 256
+#else
 #define ST_WIDTH 320
+#endif
 
 // used now as a maximum video mode size for extra vesa modes.
 
 // we try to re-allocate a minimum of buffers for stability of the memory,
 // so all the small-enough tables based on screen size, are allocated once
 // and for all at the maximum size.
-#if defined (_WIN32_WCE) || defined (DC) || defined (_PSP) || defined (_NDS)
+#if defined (_WIN32_WCE) || defined (DC) || defined (_PSP)
 #define MAXVIDWIDTH 320
 #define MAXVIDHEIGHT 200
+#elif defined (_NDS)
+#define MAXVIDWIDTH 256
+#define MAXVIDHEIGHT 192
 #elif defined (GP2X)
 #define MAXVIDWIDTH 320 //720
 #define MAXVIDHEIGHT 240 //576
@@ -59,8 +66,13 @@
 #define MAXVIDWIDTH 1920 // don't set this too high because actually
 #define MAXVIDHEIGHT 1200 // lots of tables are allocated with the MAX size.
 #endif
+#ifdef _NDS
+#define BASEVIDWIDTH 256 // NEVER CHANGE THIS! This is the original
+#define BASEVIDHEIGHT 192 // resolution of the graphics.
+#else
 #define BASEVIDWIDTH 320 // NEVER CHANGE THIS! This is the original
 #define BASEVIDHEIGHT 200 // resolution of the graphics.
+#endif
 
 // global video state
 typedef struct viddef_s
