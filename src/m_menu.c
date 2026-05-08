@@ -517,7 +517,7 @@ menu_t MainDef =
 	NULL,
 	MainMenu,
 	M_DrawCenteredMenu,
-	BASEVIDWIDTH/2, 72,
+	BASEVIDWIDTH/2, BASEVIDHEIGHT/2 - 32,
 	0,
 	NULL
 };
@@ -690,7 +690,7 @@ menu_t SinglePlayerDef =
 	&MainDef,
 	SinglePlayerMenu,
 	M_DrawGenericMenu,
-	130, 72, // Tails 11-30-2000
+	BASEVIDWIDTH/2 - 30, BASEVIDHEIGHT/2 - 32, // Tails 11-30-2000
 	0,
 	NULL
 };
@@ -3569,8 +3569,8 @@ static void M_DrawStats(void)
 			found++;
 	}
 
-	V_DrawString(64, 32, 0, va("x %d/%d", found, numemblems));
-	V_DrawScaledPatch(32, 32-4, 0, W_CachePatchName("EMBLICON", PU_STATIC));
+	V_DrawString(52, 32, 0, va("x %d/%d", found, numemblems));
+	V_DrawScaledPatch(20, 32-4, 0, W_CachePatchName("EMBLICON", PU_STATIC));
 
 	if (G_TicsToHours(totalplaytime) < 10)
 		sprintf(hours, "0%i", G_TicsToHours(totalplaytime));
@@ -3587,8 +3587,8 @@ static void M_DrawStats(void)
 	else
 		sprintf(seconds, "%i", G_TicsToSeconds(totalplaytime));
 
-	V_DrawCenteredString(224, 8, 0, "Total Play Time:");
-	V_DrawCenteredString(224, 20, 0, va("%s:%s:%s", hours, minutes, seconds));
+	V_DrawCenteredString(BASEVIDWIDTH/2 + 64, 8, 0, "Total Play Time:");
+	V_DrawCenteredString(BASEVIDWIDTH/2 + 64, 20, 0, va("%s:%s:%s", hours, minutes, seconds));
 
 	for (i = 0; i < NUMMAPS; i++)
 	{
@@ -3618,23 +3618,23 @@ static void M_DrawStats(void)
 		else
 			sprintf(seconds, "%i", G_TicsToSeconds(besttime));
 
-		V_DrawCenteredString(224, 36, 0, "Best Time Attack:");
-		V_DrawCenteredString(224, 48, 0, va("%s:%s:%s", hours, minutes, seconds));
+		V_DrawCenteredString(BASEVIDWIDTH/2 + 64, 36, 0, "Best Time Attack:");
+		V_DrawCenteredString(BASEVIDWIDTH/2 + 64, 48, 0, va("%s:%s:%s", hours, minutes, seconds));
 	}
 
 	{
-		INT32 y = 80;
+		INT32 y = 72;
 		char names[8];
 		emblem_t *emblem;
 
-		V_DrawString(32+36, y-16, 0, "LEVEL NAME");
-		V_DrawString(224+28, y-16, 0, "BEST TIME");
+		V_DrawString(24+36, y-16, 0, "LEVEL NAME");
+		V_DrawString(BASEVIDWIDTH/2 + 44, y-16, 0, "BEST TIME");
 
 		lastmapnum = 0;
 		oldlastmapnum = 0;
 
 		sprintf(names, "%c %c %c", skins[0].name[0], skins[1].name[0], skins[2].name[0]);
-		V_DrawString(32, y-16, 0, names);
+		V_DrawString(16, y-16, 0, names);
 
 		for (i = oldlastmapnum; i < NUMMAPS; i++)
 		{
@@ -3655,9 +3655,9 @@ static void M_DrawStats(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 1);
@@ -3665,9 +3665,9 @@ static void M_DrawStats(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 2);
@@ -3675,15 +3675,15 @@ static void M_DrawStats(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			if (mapheaderinfo[i].actnum != 0)
-				V_DrawString(32+36, y, V_YELLOWMAP, va("%s %d", mapheaderinfo[i].lvlttl, mapheaderinfo[i].actnum));
+				V_DrawString(24+36, y, V_YELLOWMAP, va("%s %d", mapheaderinfo[i].lvlttl, mapheaderinfo[i].actnum));
 			else
-				V_DrawString(32+36, y, V_YELLOWMAP, mapheaderinfo[i].lvlttl);
+				V_DrawString(24+36, y, V_YELLOWMAP, mapheaderinfo[i].lvlttl);
 
 			if (timedata[i].time)
 			{
@@ -3702,7 +3702,7 @@ static void M_DrawStats(void)
 				else
 					sprintf(hours, "%i", G_TicsToCentiseconds(timedata[i].time));
 
-				V_DrawString(224+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
+				V_DrawString(BASEVIDWIDTH/2 + 44+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
 			}
 
 			y += 8;
@@ -3745,9 +3745,9 @@ static void M_DrawStats2(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 1);
@@ -3755,9 +3755,9 @@ static void M_DrawStats2(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 2);
@@ -3765,9 +3765,9 @@ static void M_DrawStats2(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			if (mapheaderinfo[i].actnum != 0)
@@ -3792,7 +3792,7 @@ static void M_DrawStats2(void)
 				else
 					sprintf(hours, "%i", G_TicsToCentiseconds(timedata[i].time));
 
-				V_DrawString(224+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
+				V_DrawString(BASEVIDWIDTH/2 + 44+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
 			}
 
 			y += 8;
@@ -3835,9 +3835,9 @@ static void M_DrawStats3(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 1);
@@ -3845,9 +3845,9 @@ static void M_DrawStats3(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 2);
@@ -3855,9 +3855,9 @@ static void M_DrawStats3(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			if (mapheaderinfo[i].actnum != 0)
@@ -3882,7 +3882,7 @@ static void M_DrawStats3(void)
 				else
 					sprintf(hours, "%i", G_TicsToCentiseconds(timedata[i].time));
 
-				V_DrawString(224+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
+				V_DrawString(BASEVIDWIDTH/2 + 44+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
 			}
 
 			y += 8;
@@ -3925,9 +3925,9 @@ static void M_DrawStats4(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 1);
@@ -3935,9 +3935,9 @@ static void M_DrawStats4(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 2);
@@ -3945,9 +3945,9 @@ static void M_DrawStats4(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			if (mapheaderinfo[i].actnum != 0)
@@ -3972,7 +3972,7 @@ static void M_DrawStats4(void)
 				else
 					sprintf(hours, "%i", G_TicsToCentiseconds(timedata[i].time));
 
-				V_DrawString(224+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
+				V_DrawString(BASEVIDWIDTH/2 + 44+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
 			}
 
 			y += 8;
@@ -4015,9 +4015,9 @@ static void M_DrawStats5(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(30, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(14, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 1);
@@ -4025,9 +4025,9 @@ static void M_DrawStats5(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(42, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(26, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			emblem = M_GetLevelEmblem(i+1, 2);
@@ -4035,9 +4035,9 @@ static void M_DrawStats5(void)
 			if (emblem)
 			{
 				if (emblem->collected)
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("GOTIT", PU_CACHE));
 				else
-					V_DrawScaledPatch(54, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
+					V_DrawScaledPatch(38, y, 0, W_CachePatchName("NEEDIT", PU_CACHE));
 			}
 
 			if (mapheaderinfo[i].actnum != 0)
@@ -4062,7 +4062,7 @@ static void M_DrawStats5(void)
 				else
 					sprintf(hours, "%i", G_TicsToCentiseconds(timedata[i].time));
 
-				V_DrawString(224+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
+				V_DrawString(BASEVIDWIDTH/2 + 44+28, y, 0, va("%s:%s:%s", minutes,seconds,hours));
 			}
 
 			y += 8;
@@ -6815,7 +6815,7 @@ menu_t LoadDef =
 	&SinglePlayerDef,
 	LoadGameMenu,
 	M_DrawLoad,
-	80, 54,
+	BASEVIDWIDTH/2 - 88, 54,
 	0,
 	NULL
 };

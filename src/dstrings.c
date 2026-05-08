@@ -378,33 +378,38 @@ const char *text[NUMTEXT] =
 
 	" #", //INTRO01TEXT
 
-	"Two months had passed since Dr. Eggman\n"\
-	"tried to take over the world using his\n"\
-	"Ring Satellite.\n#", //INTRO02TEXT
+	"Two months had passed since\nDr. Eggman "\
+	"tried to take over the\nworld using his "\
+	"Ring Satellite.#", //INTRO02TEXT
 
 	"As it was about to drain the rings\n"\
-	"away from the planet, Sonic burst into\n"\
-	"the Satellite and for what he thought\n"\
-	"would be the last time, defeated\n"\
-	"Dr. Eggman.\n#", //INTRO03TEXT
+	"away from the planet, Sonic burst\n"\
+	"into the Satellite and for what he\n"\
+	"thought would be the last time,\n"\
+	"defeated Dr. Eggman.#", //INTRO03TEXT
 
-	"\nWhat Sonic, Tails, and Knuckles had\n"\
-	"not anticipated was that Eggman would\n"
-	"return, bringing an all new threat.\n#", //INTRO04TEXT
+	"What Sonic, Tails, and Knuckles\n"\
+	"had not anticipated was that\n"\
+	"Eggman would return, bringing an\n"\
+	"all new threat.#", //INTRO04TEXT
 
-	"About once every year, a strange asteroid\n"\
-	"hovers around the planet. it suddenly\n"\
-	"appears from nowhere, circles around, and\n"\
-	"- just as mysteriously as it arrives, it\n"\
-	"vanishes after about two months.\n"\
-	"No one knows why it appears, or how.\n#", //INTRO05TEXT
+	"About once every year, a strange\n"\
+	"asteroid hovers around the\n"\
+	"planet. it suddenly appears from\n"\
+	"nowhere, circles around, and\n"\
+	"just as mysteriously as it\n"\
+	"arrives, it vanishes after about\n"\
+	"two months. No one knows why it\n"\
+	"appears, or how.#", //INTRO05TEXT
 
-	"\"Curses!\" Eggman yelled. \"That hedgehog\n"\
-	"and his ridiculous friends will pay\n"\
-	"dearly for this!\" Just then his scanner\n"\
-	"blipped as the Black Rock made its\n"\
-	"appearance from nowhere. Eggman looked at\n"\
-	"the screen, and just shrugged it off.\n#", //INTRO06TEXT
+	"\"Curses!\" Eggman yelled. \"That\n"\
+	"hedgehog and his ridiculous\n"\
+	"friends will pay dearly for this!\"\n"\
+	"Just then his scanner blipped as\n"\
+	"the Black Rock made its appearance\n"\
+	"from nowhere. Eggman looked at\n"\
+	"the screen, and just shrugged it\n"\
+	"off.#", //INTRO06TEXT
 
 	"It was only later\n"\
 	"that he had an\n"\
@@ -420,44 +425,52 @@ const char *text[NUMTEXT] =
 	"and every last\n"\
 	"person will be\n"\
 	"begging for mercy,\n"\
-	"including Sonic!\"\n#", //INTRO07TEXT
+	"including Sonic!\"#", //INTRO07TEXT
 
-	"\n\nBefore beginning his scheme,\n"\
+	"Before beginning his scheme,\n"\
 	"Eggman decided to give Sonic\n"\
-	"a reunion party...\n#", //INTRO08TEXT
+	"a reunion party...#", //INTRO08TEXT
 
-	"\"We're ready to fire in 15 seconds!\"\n"\
-	"The robot said, his voice crackling a\n"
-	"little down the com-link. \"Good!\"\n"\
-	"Eggman sat back in his Egg-Mobile and\n"\
-	"began to count down as he saw the\n"\
-	"GreenFlower city on the main monitor.\n#", //INTRO09TEXT
+	"\"We're ready to fire in 15\n"\
+	"seconds!\" the robot said, his\n"\
+	"voice crackling a little down\n"\
+	"the com-link. \"Good!\"\n"\
+	"Eggman sat back in his\n"\
+	"Egg-Mobile and began to count\n"\
+	"down as he saw the GreenFlower\n"\
+	"city on the main monitor.#", //INTRO09TEXT
 
 	"\"10...9...8...\"\n"\
-	"Meanwhile, Sonic was tearing across the\n"\
-	"zones, and everything became nothing but\n"\
-	"a blur as he ran around loops, skimmed\n"\
-	"over water, and catapulted himself off\n"\
-	"rocks with his phenomenal speed.\n#", //INTRO10TEXT
+	"Meanwhile, Sonic was tearing\n"\
+	"across the zones, and\n"\
+	"everything became nothing but\n"\
+	"a blur as he ran around loops,\n"\
+	"skimmed over water, and\n"\
+	"catapulted himself off rocks\n"\
+	"with his phenomenal speed.#", //INTRO10TEXT
 
 	"\"5...4...3...\"\n"\
-	"Sonic knew he was getting closer to the\n"\
-	"City, and pushed himself harder. Finally,\n"\
-	"the city appeared in the horizon.\n"\
-	"\"2...1...Zero.\"\n#", //INTRO11TEXT
+	"Sonic knew he was getting closer\n"\
+	"to the City, and pushed himself\n"\
+	"harder. Finally, the city\n"\
+	"appeared in the horizon.\n"\
+	"\"2...1...Zero.\"#", //INTRO11TEXT
 
 	"GreenFlower City was gone.\n"\
-	"Sonic arrived just in time to see what\n"\
-	"little of the 'ruins' were left. Everyone\n"\
-	"and everything in the city had been\n"\
-	"obliterated.\n#", //INTRO12TEXT
+	"Sonic arrived just in time to\n"\
+	"see what little of the 'ruins'\n"\
+	"were left. Everyone and\n"\
+	"everything in the city had\n"\
+	"been obliterated.#", //INTRO12TEXT
 
-	"\"You're not quite as dead as we thought,\n"\
-	"huh? Are you going to tell us your plan as\n"\
-	"usual or will I 'have to work it out' or\n"\
-	"something?\"                         \n"\
-	"\"We'll see... let's give you a quick warm\n"\
-	"up, Sonic! JETTYSYNS! Open fire!\"\n#", //INTRO13TEXT
+	"\"You're not quite as dead as we\n"\
+	"thought, huh? Are you going to\n"\
+	"tell us your plan as usual or\n"\
+	"will I 'have to work it out'\n"\
+	"or something?\"                         \n"\
+	"\"We'll see... let's give you a\n"\
+	"quick warm up, Sonic! JETTYSYNS!\n"\
+	"Open fire!\"#", //INTRO13TEXT
 
 	"Eggman took this\n"\
 	"as his cue and\n"\
@@ -470,7 +483,7 @@ const char *text[NUMTEXT] =
 	"with a grim face\n"\
 	"and sighed.           \n"\
 	"\"Now what do we\n"\
-	"do?\", he asked.\n#", //INTRO14TEXT
+	"do?\", he asked.#", //INTRO14TEXT
 
 	"\"Easy! We go\n"\
 	"find Eggman\n"\
@@ -483,14 +496,17 @@ const char *text[NUMTEXT] =
 	"...                    \n\n"\
 	"\"Tails,what\n"\
 	"*ARE* you\n"\
-	"doing?\"\n#", //INTRO15TEXT
+	"doing?\"#", //INTRO15TEXT
 
-	"\"I'm just finding what mission obje...\n"\
-	"a-ha! Here it is! This will only give\n"\
-	"the robot's primary objective. It says,\n"\
-	"* LOCATE AND RETRIEVE CHAOS EMERALD.\n"\
-	"ESTIMATED LOCATION: GREENFLOWER ZONE *\"\n"\
-	"\"All right, then let's go!\"\n#", //INTRO16TEXT
+	"\"I'm just finding what mission\n"\
+	"obje... a-ha! Here it is! This\n"\
+	"will only give the robot's\n"\
+	"primary objective. It says,\n"\
+	"            * LOCATE AND RETRIEVE *\n"\
+	"                  CHAOS EMERALD.\n"\
+	"              ESTIMATED LOCATION:\n"\
+	"                GREENFLOWER ZONE              \"\n"\
+	"\"All right, then let's go!\"#", //INTRO16TEXT
 
 /*
 "What are we waiting for? The first emerald is ours!" Sonic was about to

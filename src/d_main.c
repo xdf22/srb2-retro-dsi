@@ -615,6 +615,11 @@ void D_SRB2Loop(void)
 
 		// check for media change, loop music..
 		I_UpdateCD();
+		
+		#if defined(_NDS)
+		if (srb2_playsong)
+			streamingFillBuffer();
+		#endif
 
 #ifdef HW3SOUND
 		HW3S_EndFrameUpdate();

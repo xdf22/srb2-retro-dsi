@@ -46,6 +46,7 @@ credit_t credits[19];
 static INT32 finalestage;
 static INT32 finalecount;
 INT32 titlescrollspeed = 80;
+static INT32 scrolly = 0;
 
 static INT32 timetonext; // Delay between screen changes
 static INT32 finaletextcount;
@@ -527,6 +528,7 @@ void F_StartIntro(void)
 	paused = false;
 	CON_ToggleOff();
 	CON_ClearHUD();
+	scrolly = 0;
 	finaletext = text[INTRO01TEXT];
 
 	finalestage = finaletextcount = finalecount = animtimer = stoptimer = 0;
@@ -729,7 +731,7 @@ void F_CutsceneTicker(void)
 //
 static void F_WriteText(INT32 cx, INT32 cy)
 {
-	INT32 count, c, w, originalx = cx;
+	INT32 count, c, w, originalx = cx, originaly = cy;
 	const char *ch = finaletext; // draw some of the text onto the screen
 
 	count = (finaletextcount - 10)/2;
@@ -768,6 +770,9 @@ static void F_WriteText(INT32 cx, INT32 cy)
 			cy += 12;
 			continue;
 		}
+		
+		if ((cy - scrolly) < originaly)
+			continue;
 
 		c = toupper(c) - HU_FONTSTART;
 		if (c < 0 || (c >= HU_REALFONTSIZE && c != '~' - HU_FONTSTART && c != '`' - HU_FONTSTART)) /// \note font end hack
@@ -778,15 +783,18 @@ static void F_WriteText(INT32 cx, INT32 cy)
 
 		w = SHORT(hu_font[c]->width);
 		if (cx + w > vid.width)
-			break;
-		V_DrawScaledPatch(cx, cy, 0, hu_font[c]);
+			continue;
+		V_DrawScaledPatch(cx, (cy - scrolly), 0, hu_font[c]);
 		cx += w;
 	}
+	
+	if (cy - scrolly >= BASEVIDHEIGHT)
+		scrolly += 12;
 }
 
 static void F_WriteCutsceneText(void)
 {
-	INT32 count, c, w, originalx = textxpos, cx = textxpos, cy = textypos;
+	INT32 count, c, w, originalx = textxpos, originaly = textypos, cx = textxpos, cy = textypos;
 	const char *ch = finaletext; // draw some of the text onto the screen
 
 	count = (finaletextcount - 10)/2;
@@ -820,6 +828,9 @@ static void F_WriteCutsceneText(void)
 			cy += 12;
 			continue;
 		}
+		
+		if ((cy - scrolly) < originaly)
+			continue;
 
 		c = toupper(c) - HU_FONTSTART;
 		if (c < 0 || (c >= HU_REALFONTSIZE && c != '~' - HU_FONTSTART && c != '`' - HU_FONTSTART))
@@ -830,10 +841,13 @@ static void F_WriteCutsceneText(void)
 
 		w = SHORT(hu_font[c]->width);
 		if (cx + w > vid.width)
-			break;
-		V_DrawScaledPatch(cx, cy, 0, hu_font[c]);
+			continue;
+		V_DrawScaledPatch(cx, (cy - scrolly), 0, hu_font[c]);
 		cx += w;
 	}
+	
+	if (cy - scrolly >= BASEVIDHEIGHT)
+		scrolly += 12;
 }
 
 //
@@ -842,7 +856,7 @@ static void F_WriteCutsceneText(void)
 static void F_IntroTextWrite(void)
 {
 	boolean nobg = false, highres = false;
-	INT32 cx = 8, cy = 128;
+	INT32 cx = 2, cy = BASEVIDHEIGHT/2 + 36;
 
 	// DRAW A FULL PIC INSTEAD OF FLAT!
 	if (finaletext == text[INTRO01TEXT])
@@ -866,7 +880,7 @@ static void F_IntroTextWrite(void)
 	else if (finaletext == text[INTRO07TEXT])
 	{
 		background = W_CachePatchName("INTRO6", PU_CACHE);
-		cx = 180;
+		cx = 116;
 		cy = 8;
 	}
 	else if (finaletext == text[INTRO08TEXT])
@@ -900,7 +914,7 @@ static void F_IntroTextWrite(void)
 	{
 		background = W_CachePatchName("SONICDO1", PU_CACHE);
 		highres = true;
-		cx = 224;
+		cx = BASEVIDWIDTH/2 + 20;
 		cy = 8;
 	}
 	else if (finaletext == text[INTRO16TEXT])
@@ -913,8 +927,8 @@ static void F_IntroTextWrite(void)
 
 	if (finaletext == text[INTRO01TEXT])
 	{
-		V_DrawCreditString(160 - (V_CreditStringWidth("SONIC TEAM JR")/2), 80, 0, "SONIC TEAM JR");
-		V_DrawCreditString(160 - (V_CreditStringWidth("PRESENTS")/2), 96, 0, "PRESENTS");
+		V_DrawCreditString(BASEVIDWIDTH/2 - (V_CreditStringWidth("SONIC TEAM JR")/2), 80, 0, "SONIC TEAM JR");
+		V_DrawCreditString(BASEVIDWIDTH/2 - (V_CreditStringWidth("PRESENTS")/2), 96, 0, "PRESENTS");
 	}
 	else if (finaletext == text[INTRO11TEXT])
 	{
@@ -961,20 +975,20 @@ static void F_IntroTextWrite(void)
 			else
 			{
 				animtimer = finalecount % 16;
-				deplete = 160;
+				deplete = BASEVIDWIDTH/2;
 			}
 
 			if (finalecount & 1)
 			{
 				V_DrawScaledPatch(deplete, 8, 0, W_CachePatchName("RUN2", PU_CACHE));
-				V_DrawScaledPatch(deplete, 72, 0, W_CachePatchName("PEELOUT2", PU_CACHE));
+				V_DrawScaledPatch(deplete, BASEVIDWIDTH/2 - 28, 0, W_CachePatchName("PEELOUT2", PU_CACHE));
 			}
 			else
 			{
 				V_DrawScaledPatch(deplete, 8, 0, W_CachePatchName("RUN1", PU_CACHE));
-				V_DrawScaledPatch(deplete, 72, 0, W_CachePatchName("PEELOUT1", PU_CACHE));
+				V_DrawScaledPatch(deplete, BASEVIDWIDTH/2 - 28, 0, W_CachePatchName("PEELOUT1", PU_CACHE));
 			}
-			V_DrawFill(0, 112, vid.width, (INT32)(vid.height - 112*vid.fdupy), 31);
+			V_DrawFill(0, BASEVIDHEIGHT/2 + 12, vid.width, (INT32)(vid.height - (BASEVIDHEIGHT/2 + 12)*vid.fdupy), 31);
 		}
 	}
 	else if (finaletext == text[INTRO08TEXT] && timetonext > 0 && finaletextcount >= 5*TICRATE
@@ -986,20 +1000,20 @@ static void F_IntroTextWrite(void)
 	if (!nobg)
 	{
 		if (highres)
-			V_DrawSmallScaledPatch(0, 0, 0, background);
+			V_DrawSmallScaledPatch(-16, 0, 0, background);
 		else
-			V_DrawScaledPatch(0, 0, 0, background);
+			V_DrawScaledPatch(-16, 0, 0, background);
 	}
 
 	if (finaletext == text[INTRO14TEXT])
 	{
 		V_DrawFill(0, 0, vid.width, vid.height, 31);
-		V_DrawSmallScaledPatch(144, 0, 0, W_CachePatchName("TAILSSAD", PU_CACHE));
+		V_DrawSmallScaledPatch(BASEVIDWIDTH/2 - 16, 0, 0, W_CachePatchName("TAILSSAD", PU_CACHE));
 	}
 	else if (finaletext == text[INTRO05TEXT]) // The asteroid SPINS!
 	{
 		if (roidtics >= 0)
-			V_DrawScaledPatch(roidtics, 24, 0,
+			V_DrawScaledPatch(roidtics, BASEVIDWIDTH/2 - 76, 0,
 				W_CachePatchName(va("ROID00%.2d", finaletextcount%35), PU_CACHE));
 	}
 	else if (finaletext == text[INTRO06TEXT])
@@ -1012,7 +1026,7 @@ static void F_IntroTextWrite(void)
 
 				F_WipeStartScreen();
 
-				V_DrawScaledPatch(0, 0, 0, W_CachePatchName("RADAR", PU_CACHE));
+				V_DrawScaledPatch(-32, 0, 0, W_CachePatchName("RADAR", PU_CACHE));
 				// draw some of the text onto the screen
 				F_WriteText(cx, cy);
 
@@ -1022,7 +1036,7 @@ static void F_IntroTextWrite(void)
 			}
 		}
 		else if (finaletextcount > 5*TICRATE+(TICRATE/5)*3)
-			V_DrawScaledPatch(0, 0, 0, W_CachePatchName("RADAR", PU_CACHE));
+			V_DrawScaledPatch(-32, 0, 0, W_CachePatchName("RADAR", PU_CACHE));
 	}
 	else if (finaletext == text[INTRO13TEXT])
 	{
@@ -1034,7 +1048,7 @@ static void F_IntroTextWrite(void)
 
 				F_WipeStartScreen();
 
-				V_DrawSmallScaledPatch(0, 0, 0, W_CachePatchName("CONFRONT", PU_CACHE));
+				V_DrawSmallScaledPatch(-16, 0, 0, W_CachePatchName("CONFRONT", PU_CACHE));
 				// draw some of the text onto the screen
 				F_WriteText(cx, cy);
 
@@ -1044,7 +1058,7 @@ static void F_IntroTextWrite(void)
 			}
 		}
 		else if (finaletextcount > 9*TICRATE)
-			V_DrawSmallScaledPatch(0, 0, 0, W_CachePatchName("CONFRONT", PU_CACHE));
+			V_DrawSmallScaledPatch(-16, 0, 0, W_CachePatchName("CONFRONT", PU_CACHE));
 	}
 	else if (finaletext == text[INTRO15TEXT])
 	{
@@ -1056,7 +1070,7 @@ static void F_IntroTextWrite(void)
 
 				F_WipeStartScreen();
 
-				V_DrawSmallScaledPatch(0, 0, 0, W_CachePatchName("SONICDO2", PU_CACHE));
+				V_DrawSmallScaledPatch(-16, 0, 0, W_CachePatchName("SONICDO2", PU_CACHE));
 				// draw some of the text onto the screen
 				F_WriteText(cx, cy);
 
@@ -1066,7 +1080,7 @@ static void F_IntroTextWrite(void)
 			}
 		}
 		else if (finaletextcount > 7*TICRATE)
-			V_DrawSmallScaledPatch(0, 0, 0, W_CachePatchName("SONICDO2", PU_CACHE));
+			V_DrawSmallScaledPatch(-16, 0, 0, W_CachePatchName("SONICDO2", PU_CACHE));
 	}
 
 	if (animtimer)
@@ -1183,42 +1197,14 @@ static void F_SkyScroll(void)
 
 	fakedwidth = vid.width / vid.dupx;
 
-	if (rendermode == render_soft)
+	scrolled = animtimer;
+	if (scrolled > 0)
+		V_DrawScaledPatch(scrolled - SHORT(pat->width), 0, 0, pat);
+	while(scrolled < SHORT(pat->width))
 	{
-		INT32 yr = 0;
-
-		if (vid.fdupy > vid.dupy)
-			yr = vid.height - vid.dupy*SHORT(pat->height);
-
-		scrolled = BASEVIDWIDTH - animtimer;
-		if (scrolled > BASEVIDWIDTH)
-			scrolled = BASEVIDWIDTH;
-		if (scrolled < 0)
-			scrolled = 0;
-		for (x = 0, mx = 0; x < fakedwidth; x++, mx++)
-		{
-			if (mx >= SHORT(pat->width))
-				mx = 0;
-
-			if (mx + scrolled < SHORT(pat->width))
-				F_DrawPatchCol(x, pat, mx + scrolled, yr);
-			else
-				F_DrawPatchCol(x, pat, mx + scrolled - SHORT(pat->width), yr);
-		}
+		V_DrawScaledPatch(scrolled, 0, 0, pat);
+		scrolled += SHORT(pat->width);
 	}
-#ifdef HWRENDER
-	else if (rendermode != render_none)
-	{ // I wish it were as easy as this for software. I really do.
-		scrolled = animtimer;
-		if (scrolled > 0)
-			V_DrawScaledPatch(scrolled - SHORT(pat->width), 0, 0, pat);
-		while(scrolled < BASEVIDWIDTH)
-		{
-			V_DrawScaledPatch(scrolled, 0, 0, pat);
-			scrolled += SHORT(pat->width);
-		}
-	}
-#endif
 }
 
 // De-Demo'd Title Screen
@@ -1227,42 +1213,42 @@ void F_TitleScreenDrawer(void)
 	// Draw that sky!
 	F_SkyScroll();
 
-	V_DrawScaledPatch(30, 14, 0, ttwing);
+	V_DrawScaledPatch(-2, 14, 0, ttwing);
 
 	if (finalecount < 57)
 	{
 		if (finalecount == 35)
-			V_DrawScaledPatch(115, 15, 0, ttspop1);
+			V_DrawScaledPatch(83, 15, 0, ttspop1);
 		else if (finalecount == 36)
-			V_DrawScaledPatch(114, 15, 0,ttspop2);
+			V_DrawScaledPatch(82, 15, 0,ttspop2);
 		else if (finalecount == 37)
-			V_DrawScaledPatch(113, 15, 0,ttspop3);
+			V_DrawScaledPatch(81, 15, 0,ttspop3);
 		else if (finalecount == 38)
-			V_DrawScaledPatch(112, 15, 0,ttspop4);
+			V_DrawScaledPatch(80, 15, 0,ttspop4);
 		else if (finalecount == 39)
-			V_DrawScaledPatch(111, 15, 0,ttspop5);
+			V_DrawScaledPatch(79, 15, 0,ttspop5);
 		else if (finalecount == 40)
-			V_DrawScaledPatch(110, 15, 0, ttspop6);
+			V_DrawScaledPatch(78, 15, 0, ttspop6);
 		else if (finalecount >= 41 && finalecount <= 44)
-			V_DrawScaledPatch(109, 15, 0, ttspop7);
+			V_DrawScaledPatch(77, 15, 0, ttspop7);
 		else if (finalecount >= 45 && finalecount <= 48)
-			V_DrawScaledPatch(108, 12, 0, ttsprep1);
+			V_DrawScaledPatch(76, 12, 0, ttsprep1);
 		else if (finalecount >= 49 && finalecount <= 52)
-			V_DrawScaledPatch(107, 9, 0, ttsprep2);
+			V_DrawScaledPatch(75, 9, 0, ttsprep2);
 		else if (finalecount >= 53 && finalecount <= 56)
-			V_DrawScaledPatch(106, 6, 0, ttswip1);
-		V_DrawScaledPatch(93, 106, 0, ttsonic);
+			V_DrawScaledPatch(74, 6, 0, ttswip1);
+		V_DrawScaledPatch(61, 106, 0, ttsonic);
 	}
 	else
 	{
-		V_DrawScaledPatch(93, 106, 0,ttsonic);
+		V_DrawScaledPatch(61, 106, 0,ttsonic);
 		if (finalecount/5 & 1)
-			V_DrawScaledPatch(100, 3, 0,ttswave1);
+			V_DrawScaledPatch(68, 3, 0,ttswave1);
 		else
-			V_DrawScaledPatch(100,3, 0,ttswave2);
+			V_DrawScaledPatch(68,3, 0,ttswave2);
 	}
 
-	V_DrawScaledPatch(48, 142, 0,ttbanner);
+	V_DrawScaledPatch(16, 142, 0,ttbanner);
 }
 
 // Game End Sequence
@@ -1286,16 +1272,16 @@ void F_GameEvaluationDrawer(void)
 
 	// Draw all the good crap here.
 	if (animtimer == 64)
-		V_DrawString(114, 16, 0, "GOT THEM ALL!");
+		V_DrawString(BASEVIDWIDTH/2 - 46, 16, 0, "GOT THEM ALL!");
 	else
-		V_DrawString(124, 16, 0, "TRY AGAIN!");
+		V_DrawString(BASEVIDWIDTH/2 - 36, 16, 0, "TRY AGAIN!");
 
 	finalestage++;
 	timetonext = finalestage;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD1)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGA0", PU_CACHE));
@@ -1305,8 +1291,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD2)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGB0", PU_CACHE));
@@ -1316,8 +1302,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD3)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGC0", PU_CACHE));
@@ -1327,8 +1313,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD4)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGD0", PU_CACHE));
@@ -1338,8 +1324,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD5)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGE0", PU_CACHE));
@@ -1349,8 +1335,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD6)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGF0", PU_CACHE));
@@ -1360,8 +1346,8 @@ void F_GameEvaluationDrawer(void)
 	timetonext += INTERVAL;
 
 	fa = (FixedAngle(timetonext*FRACUNIT)>>ANGLETOFINESHIFT) & FINEMASK;
-	x = 160 + FixedInt(FixedMul(FINECOSINE(fa),radius));
-	y = 100 + FixedInt(FixedMul(FINESINE(fa),radius));
+	x = BASEVIDWIDTH/2 + FixedInt(FixedMul(FINECOSINE(fa),radius));
+	y = BASEVIDHEIGHT/2 + FixedInt(FixedMul(FINESINE(fa),radius));
 
 	if (emeralds & EMERALD7)
 		V_DrawScaledPatch(x, y, 0, W_CachePatchName("CEMGG0", PU_CACHE));
@@ -1443,10 +1429,10 @@ void F_GameEvaluationDrawer(void)
 	if (finalecount >= 5*TICRATE)
 	{
 		if (drawemblem)
-			V_DrawScaledPatch(120, 192, 0, W_CachePatchName("NWNGA0", PU_CACHE));
+			V_DrawScaledPatch(BASEVIDWIDTH/2 - 40, 192, 0, W_CachePatchName("NWNGA0", PU_CACHE));
 
 		if (drawchaosemblem)
-			V_DrawScaledPatch(200, 192, 0, W_CachePatchName("NWNGA0", PU_CACHE));
+			V_DrawScaledPatch(BASEVIDWIDTH/2 + 40, 192, 0, W_CachePatchName("NWNGA0", PU_CACHE));
 
 		V_DrawString(8, 16, V_YELLOWMAP, "Unlocked:");
 
@@ -1519,7 +1505,7 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 		case 1:
 		case 2:
 			if (ultimatemode)
-				V_DrawSmallScaledPatch(204, 118, 0, W_CachePatchName("ACRED02", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 44, 118, 0, W_CachePatchName("ACRED02", PU_CACHE));
 			else
 				V_DrawSmallScaledPatch(8, 112, 0, W_CachePatchName("CREDIT01", PU_CACHE));
 			break;
@@ -1527,13 +1513,13 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 		case 4:
 			if (ultimatemode)
 			{
-				V_DrawSmallScaledPatch(234, 118, 0, W_CachePatchName("ACRED01", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 74, 118, 0, W_CachePatchName("ACRED01", PU_CACHE));
 				V_DrawSmallScaledPatch(4, 4, 0, W_CachePatchName("ACRED03", PU_CACHE));
 			}
 			else
 			{
 				V_DrawSmallScaledPatch(4, 4, 0, W_CachePatchName("CREDIT13", PU_CACHE));
-				V_DrawSmallScaledPatch(250, 100, 0, W_CachePatchName("CREDIT12", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 90, 100, 0, W_CachePatchName("CREDIT12", PU_CACHE));
 			}
 			break;
 		case 5:
@@ -1544,9 +1530,9 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 			break;
 		case 6:
 			if (ultimatemode)
-				V_DrawSmallScaledPatch(55, 0, 0, W_CachePatchName("ACRED05", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 - 105, 0, 0, W_CachePatchName("ACRED05", PU_CACHE));
 			else
-				V_DrawSmallScaledPatch(248, 110, 0, W_CachePatchName("CREDIT11", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 88, 110, 0, W_CachePatchName("CREDIT11", PU_CACHE));
 			break;
 		case 7:
 		case 8:
@@ -1563,22 +1549,22 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 			break;
 		case 10:
 			if (ultimatemode)
-				V_DrawSmallScaledPatch(202, 128, 0, W_CachePatchName("ACRED09", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 42, 128, 0, W_CachePatchName("ACRED09", PU_CACHE));
 			else
-				V_DrawSmallScaledPatch(240, 8, 0, W_CachePatchName("CREDIT05", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 80, 8, 0, W_CachePatchName("CREDIT05", PU_CACHE));
 			break;
 		case 11:
 		case 12:
 			if (ultimatemode)
 				V_DrawSmallScaledPatch((BASEVIDWIDTH/2) - 46, 102, 0, W_CachePatchName("ACRED11", PU_CACHE));
 			else
-				V_DrawSmallScaledPatch(120, 120, 0, W_CachePatchName("CREDIT06", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 - 40, 120, 0, W_CachePatchName("CREDIT06", PU_CACHE));
 			break;
 		case 13:
 		case 14:
 			if (ultimatemode)
 			{
-				V_DrawSmallScaledPatch(174, 84, 0, W_CachePatchName("ACRED08", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 14, 84, 0, W_CachePatchName("ACRED08", PU_CACHE));
 				V_DrawSmallScaledPatch(2, 64, 0, W_CachePatchName("ACRED10", PU_CACHE));
 			}
 			else
@@ -1588,7 +1574,7 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 		case 16:
 			if (ultimatemode)
 			{
-				V_DrawSmallScaledPatch(174, 84, 0, W_CachePatchName("ACRED08", PU_CACHE));
+				V_DrawSmallScaledPatch(BASEVIDWIDTH/2 + 14, 84, 0, W_CachePatchName("ACRED08", PU_CACHE));
 				V_DrawSmallScaledPatch(2, 52, 0, W_CachePatchName("ACRED10", PU_CACHE));
 			}
 			else
@@ -1596,7 +1582,7 @@ static void F_DrawCreditScreen(credit_t *creditpassed)
 			break;
 		case 17:
 		case 18:
-			V_DrawSmallScaledPatch(112, 104, 0, W_CachePatchName("CREDIT09", PU_CACHE));
+			V_DrawSmallScaledPatch(BASEVIDWIDTH/2 - 48, 104, 0, W_CachePatchName("CREDIT09", PU_CACHE));
 			break;
 	}
 
@@ -1690,6 +1676,8 @@ void F_IntroDrawer(void)
 {
 	if (timetonext <= 0)
 	{
+		scrolly = 0;
+		
 		if (finaletext == text[INTRO01TEXT])
 		{
 			S_ChangeMusic(mus_read_m, false);
@@ -1830,6 +1818,7 @@ static void F_AdvanceToNextScene(void)
 		F_RunWipe(TICRATE, true);
 	}
 
+	scrolly = 0;
 	finaletextcount = 0;
 	timetonext = 0;
 	stoptimer = 0;

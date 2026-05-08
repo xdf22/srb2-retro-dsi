@@ -369,6 +369,10 @@ static void V_DrawTranslucentMappedPatch(INT32 x, INT32 y, INT32 scrn, patch_t *
 
 	for (; col < w; col += colfrac, desttop++)
 	{
+		if ((x + (col >> FRACBITS) > BASEVIDWIDTH-1)
+			|| x + (col >> FRACBITS) < 0)
+			continue;
+		
 		column = (const column_t *)((const UINT8 *)patch + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -469,6 +473,10 @@ void V_DrawMappedPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch, const UINT8
 
 	for (; col < w; col += colfrac, desttop++)
 	{
+		if ((x + (col >> FRACBITS) > BASEVIDWIDTH-1)
+			|| x + (col >> FRACBITS) < 0)
+			continue;
+		
 		column = (const column_t *)((const UINT8 *)patch + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -573,6 +581,10 @@ void V_DrawScaledPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch)
 	{
 		register INT32 heightmask;
 
+		if ((x + (col >> FRACBITS) > BASEVIDWIDTH-1)
+			|| x + (col >> FRACBITS) < 0)
+			continue;
+		
 		column = (const column_t *)((const UINT8 *)(patch) + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -694,6 +706,10 @@ static void V_DrawClippedScaledPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patc
 	for (col = 0; desttop < destend; col += colfrac, desttop++)
 	{
 		register INT32 heightmask;
+		
+		if ((x + (col >> FRACBITS) > BASEVIDWIDTH-1)
+			|| x + (col >> FRACBITS) < 0)
+			continue;
 
 		column = (const column_t *)((const UINT8 *)patch + LONG(patch->columnofs[col>>FRACBITS]));
 
@@ -847,6 +863,10 @@ void V_DrawSmallScaledPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch)
 	for (col = 0; desttop < destend; col += colfrac, desttop++)
 	{
 		register INT32 heightmask;
+
+		if ((2*x + (col >> FRACBITS) > 2*BASEVIDWIDTH - 2)
+			|| (2*x + (col >> FRACBITS) < 0))
+			continue;
 
 		column = (const column_t *)((const UINT8 *)(patch) + LONG(patch->columnofs[col>>FRACBITS]));
 
@@ -1011,6 +1031,10 @@ void V_DrawSmallTranslucentMappedPatch(INT32 x, INT32 y, INT32 scrn, patch_t *pa
 	{
 		register INT32 heightmask;
 
+		if ((2*x + (col >> FRACBITS) > 2*BASEVIDWIDTH - 2)
+			|| (2*x + (col >> FRACBITS) < 0))
+			continue;
+
 		column = (const column_t *)((const UINT8 *)(patch) + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -1174,6 +1198,10 @@ void V_DrawSmallTranslucentPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch)
 	{
 		register INT32 heightmask;
 
+		if ((2*x + (col >> FRACBITS) > 2*BASEVIDWIDTH - 2)
+			|| (2*x + (col >> FRACBITS) < 0))
+			continue;
+
 		column = (const column_t *)((const UINT8 *)(patch) + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -1331,6 +1359,10 @@ void V_DrawSmallMappedPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch, const 
 	{
 		register INT32 heightmask;
 
+		if ((2*x + (col >> FRACBITS) > 2*BASEVIDWIDTH - 2)
+			|| (2*x + (col >> FRACBITS) < 0))
+			continue;
+			
 		column = (const column_t *)((const UINT8 *)(patch) + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -1486,6 +1518,10 @@ void V_DrawTranslucentPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch)
 
 	for (col = 0; col < w; col += colfrac, desttop++)
 	{
+		if ((x + (col >> FRACBITS) > BASEVIDWIDTH-1)
+			|| (x + (col >> FRACBITS) < 0))
+			continue;
+		
 		column = (const column_t *)((const UINT8 *)patch + LONG(patch->columnofs[col>>FRACBITS]));
 
 		while (column->topdelta != 0xff)
@@ -1550,6 +1586,10 @@ void V_DrawPatch(INT32 x, INT32 y, INT32 scrn, patch_t *patch)
 
 	for (col = 0; col < w; x++, col++, desttop++)
 	{
+		if ((x + col > BASEVIDWIDTH-1)
+			|| x + col < 0)
+			continue;
+		
 		column = (const column_t *)((const UINT8 *)patch + LONG(patch->columnofs[col]));
 
 		// step through the posts in a column
@@ -1646,6 +1686,9 @@ static void V_BlitScaledPic(INT32 rx1, INT32 ry1, INT32 scrn, pic_t * pic)
 			src = pic->data + y * width;
 			for (x = 0; x < width; x++)
 			{
+				if (x > BASEVIDWIDTH)
+					continue;
+				
 				for (dupx = vid.dupx; dupx; dupx--)
 					*dest++ = *src;
 				src++;
@@ -1804,6 +1847,9 @@ void V_DrawFlatFill(INT32 x, INT32 y, INT32 w, INT32 h, lumpnum_t flatnum)
 		src = flat + (((yfrac >> (FRACBITS - 1)) & (lflatsize - 1)) << flatshift);
 		for (u = 0; u < w; u++)
 		{
+			if (x + u > BASEVIDWIDTH-1)
+				continue;
+			
 			if (&dest[u] > deststop)
 				return;
 			dest[u] = src[(xfrac>>FRACBITS)&(lflatsize-1)];

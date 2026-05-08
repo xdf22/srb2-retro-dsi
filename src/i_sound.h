@@ -24,6 +24,12 @@
 #include "sounds.h"
 #include "command.h"
 
+#if defined(_NDS)
+extern boolean srb2_playsong;
+extern boolean srb2_loopsong;
+void streamingFillBuffer(void);
+#endif
+
 /**	\brief Sound subsystem runing and waiting
 */
 extern UINT8 sound_started;

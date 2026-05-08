@@ -2,9 +2,12 @@
 #include <fat.h>
 
 #include "../doomdef.h"
+#include "../doomstat.h"
 #include "../d_clisrv.h"
 #include "../d_main.h"
+#include "../d_netcmd.h"
 #include "../filesrch.h"
+#include "../g_state.h"
 #include "../m_misc.h"
 #include "../i_system.h"
 #include "../i_video.h"
@@ -64,14 +67,24 @@ void I_GetEvent(void)
 	if (keys & KEY_A) {
 		event_t event;
 		event.type = ev_keydown;
-		event.data1 = KEY_ENTER;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_ENTER;
+		else
+			event.data1 = 'z';
+		
 		D_PostEvent(&event);
 	}
 	
 	if (keys & KEY_B) {
 		event_t event;
 		event.type = ev_keydown;
-		event.data1 = KEY_LSHIFT;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_ESCAPE;
+		else
+			event.data1 = 'x';
+		
 		D_PostEvent(&event);
 	}
 	
@@ -99,14 +112,48 @@ void I_GetEvent(void)
 	if (keys & KEY_LEFT) {
 		event_t event;
 		event.type = ev_keydown;
-		event.data1 = KEY_LEFTARROW;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_LEFTARROW;
+		else
+			event.data1 = 'a';
+		
 		D_PostEvent(&event);
 	}
 	
 	if (keys & KEY_RIGHT) {
 		event_t event;
 		event.type = ev_keydown;
-		event.data1 = KEY_RIGHTARROW;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_RIGHTARROW;
+		else
+			event.data1 = 'd';
+
+		D_PostEvent(&event);
+	}
+	
+	if (keys & KEY_L) {
+		event_t event;
+		event.type = ev_keydown;
+		
+		if (cv_analog.value)
+			event.data1 = '[';
+		else
+			event.data1 = KEY_LEFTARROW;
+
+		D_PostEvent(&event);
+	}
+	
+	if (keys & KEY_R) {
+		event_t event;
+		event.type = ev_keydown;
+		
+		if (cv_analog.value)
+			event.data1 = ']';
+		else
+			event.data1 = KEY_RIGHTARROW;
+
 		D_PostEvent(&event);
 	}
 
@@ -130,14 +177,24 @@ void I_GetEvent(void)
 	if (keys & KEY_A) {
 		event_t event;
 		event.type = ev_keyup;
-		event.data1 = KEY_ENTER;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_ENTER;
+		else
+			event.data1 = 'z';
+		
 		D_PostEvent(&event);
 	}
 	
 	if (keys & KEY_B) {
 		event_t event;
 		event.type = ev_keyup;
-		event.data1 = KEY_LSHIFT;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_ESCAPE;
+		else
+			event.data1 = 'x';
+		
 		D_PostEvent(&event);
 	}
 	
@@ -165,14 +222,48 @@ void I_GetEvent(void)
 	if (keys & KEY_LEFT) {
 		event_t event;
 		event.type = ev_keyup;
-		event.data1 = KEY_LEFTARROW;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_LEFTARROW;
+		else
+			event.data1 = 'a';
+		
 		D_PostEvent(&event);
 	}
 	
 	if (keys & KEY_RIGHT) {
 		event_t event;
 		event.type = ev_keyup;
-		event.data1 = KEY_RIGHTARROW;
+		
+		if (menuactive || gamestate == GS_TITLESCREEN)
+			event.data1 = KEY_RIGHTARROW;
+		else
+			event.data1 = 'd';
+		
+		D_PostEvent(&event);
+	}
+	
+	if (keys & KEY_L) {
+		event_t event;
+		event.type = ev_keyup;
+		
+		if (cv_analog.value)
+			event.data1 = '[';
+		else
+			event.data1 = KEY_LEFTARROW;
+
+		D_PostEvent(&event);
+	}
+	
+	if (keys & KEY_R) {
+		event_t event;
+		event.type = ev_keyup;
+		
+		if (cv_analog.value)
+			event.data1 = ']';
+		else
+			event.data1 = KEY_RIGHTARROW;
+
 		D_PostEvent(&event);
 	}
 
