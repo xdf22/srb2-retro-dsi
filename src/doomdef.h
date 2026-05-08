@@ -161,7 +161,7 @@ extern FILE *logstream;
 #if ((defined (__unix__) || defined (UNIXCOMMON)) && !defined (__CYGWIN__)) && !defined (__APPLE__)
 #define DEFAULTDIR ".srb2_20"
 #else
-#define DEFAULTDIR "srb2_20"
+#define DEFAULTDIR "srb2retro"
 #endif
 #endif
 

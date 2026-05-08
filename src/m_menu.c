@@ -551,7 +551,7 @@ menu_t MISC_AddonsDef =
 	&MainDef,
 	MISC_AddonsMenu,
 	M_DrawAddons,
-	50, 28,
+	BASEVIDWIDTH/2 - 110, BASEVIDHEIGHT/2 - 72,
 	0,
 	NULL
 };

@@ -18,15 +18,17 @@ int main(int argc, char **argv)
 	TIMER0_CR=TIMER_DIV_1024 | TIMER_ENABLE;
 	TIMER1_CR=TIMER_CASCADE | TIMER_ENABLE;
 
-	// start NitroFS (for assets)
+	// start FAT (for assets)
+	if (!fatInitDefault())
+		I_Error("Failed to initialize FAT!\n");
+    
+	// start NitroFS (unused outside of MelonDS)
+	/*
 	if (!nitroFSInit(NULL))
-		I_Error("Failed to initialize nitroFS!\n");
-    chdir("nitro:/");
-
-	// start FAT (for D_Home)
-	//if (!fatInitDefault())
-	//	I_Error("Failed to initialize FAT!\n");
-	//chdir("sd:/");
+		I_Error("Failed to initialize NitroFS!\n");
+	*/
+	
+	chdir(D_Home());
 
     consoleDemoInit(); // init console
 	keyboardDemoInit(); // init keyboard

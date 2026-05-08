@@ -33,5 +33,4 @@ nds_create_rom(SRB2DSI
     SUBTITLE "Retro"
     AUTHOR "Sonic Team Jr."
     ICON "icon.gif"
-    NITROFS "${CMAKE_SOURCE_DIR}/assets/installer/"
 )

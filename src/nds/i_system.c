@@ -464,8 +464,12 @@ const CPUInfoFlags *I_CPUInfo(void)
 
 const char *I_LocateWad(void)
 {
-    chdir("nitro:/");
-	return "nitro:/";
+	/*
+	chdir("nitro:");
+	return "nitro:";
+	*/
+    chdir(va("%s%s", D_Home(), DEFAULTDIR));
+	return va("%s%s", D_Home(), DEFAULTDIR);
 }
 
 void I_GetJoystickEvents(void){}

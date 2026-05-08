@@ -103,6 +103,10 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 #include "hardware/hw3sound.h"
 #endif
 
+#if defined(_NDS)
+#include <fat.h>
+#endif
+
 //
 // DEMO LOOP
 //
@@ -1016,13 +1020,13 @@ void D_SRB2Main(void)
 
 	// default savegame
 	strcpy(savegamename,text[NORM_SAVEI]);
-
+	
 	{
 		const char *userhome = D_Home(); //Alam: path to home
 
 		if (!userhome)
 		{
-#if (defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)) && !defined (__CYGWIN__) && !defined (DC) && !defined (PSP) && !defined(GP2X)
+#if (defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)) && !defined (__CYGWIN__) && !defined (DC) && !defined (PSP) && !defined(GP2X) && !defined(_NDS)
 			I_Error("Please set $HOME to your home directory\n");
 #elif defined (_WIN32_WCE) && 0
 			if (dedicated)
@@ -1039,9 +1043,10 @@ void D_SRB2Main(void)
 		else
 		{
 			// use user specific config file
-#ifdef DEFAULTDIR
-			snprintf(srb2home, sizeof srb2home, "%s" PATHSEP DEFAULTDIR, userhome);
+#if defined(DEFAULTDIR)
+			snprintf(srb2home, sizeof srb2home, "%s" DEFAULTDIR, userhome);
 			snprintf(downloaddir, sizeof downloaddir, "%s" PATHSEP "DOWNLOAD", srb2home);
+			
 			if (dedicated)
 				snprintf(configfile, sizeof configfile, "%s" PATHSEP "d"CONFIGFILENAME, srb2home);
 			else
@@ -1052,20 +1057,22 @@ void D_SRB2Main(void)
 
 			I_mkdir(srb2home, 0700);
 #else
+		
 			snprintf(srb2home, sizeof srb2home, "%s", userhome);
-			snprintf(downloaddir, sizeof downloaddir, "%s", userhome);
+			snprintf(downloaddir, sizeof downloaddir, "%s" PATHSEP "DOWNLOAD", srb2home);
+			
 			if (dedicated)
-				snprintf(configfile, sizeof configfile, "%s" PATHSEP "d"CONFIGFILENAME, userhome);
+				snprintf(configfile, sizeof configfile, "%s" PATHSEP "d"CONFIGFILENAME, srb2home);
 			else
-				snprintf(configfile, sizeof configfile, "%s" PATHSEP CONFIGFILENAME, userhome);
+				snprintf(configfile, sizeof configfile, "%s" PATHSEP CONFIGFILENAME, srb2home);
 
 			// can't use sprintf since there is %u in savegamename
-			strcatbf(savegamename, userhome, PATHSEP);
+			strcatbf(savegamename, srb2home, PATHSEP);
 #endif
 		}
 
 		configfile[sizeof configfile - 1] = '\0';
-
+	
 #ifdef _arch_dreamcast
 	strcpy(downloaddir, "/ram"); // the dreamcast's TMP
 #endif
@@ -1395,7 +1402,8 @@ const char *D_Home(void)
 	const char *userhome = NULL;
 
 #ifdef _NDS
-	//return "sd:/srb2retro/";
+	//return "nitro:";
+	return fatGetDefaultDrive();
 #endif
 
 #ifdef ANDROID
@@ -1413,7 +1421,7 @@ const char *D_Home(void)
 #ifdef GP2X
 		usehome = false; //let use the CWD
 		return NULL;
-#elif !(defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)) && !defined (__APPLE__) && !defined(_WIN32_WCE)
+#elif !(defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)) && !defined (__APPLE__) && !defined(_WIN32_WCE) && !defined (_NDS)
 		if (FIL_FileOK(CONFIGFILENAME))
 			usehome = false; // Let's NOT use home
 		else

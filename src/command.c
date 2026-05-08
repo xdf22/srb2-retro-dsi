@@ -37,6 +37,10 @@
 #include "d_netcmd.h"
 #include "hu_stuff.h"
 
+#if defined(_NDS)
+#include "i_system.h"
+#endif
+
 //========
 // protos.
 //========
@@ -1549,20 +1553,22 @@ void CV_ClearChangedFlags(void)
 void CV_SaveVariables(FILE *f)
 {
 	consvar_t *cvar;
-
-	for (cvar = consvar_vars; cvar; cvar = cvar->next)
+	
+	for (cvar = consvar_vars; cvar; cvar = cvar->next) {
 		if (cvar->flags & CV_SAVE)
 		{
 			char stringtowrite[MAXTEXTCMD+1];
-
+	
+			CONS_Printf("%s, %d, %s\n", cvar->name, cvar->value, cvar->string);
 			// Silly hack for Min/Max vars
-			if (!strcmp(cvar->string, "MAX") || !strcmp(cvar->string, "MIN"))
+			if (!strcmp(cvar->string, "MAX") || !strcmp(cvar->string, "MIN")) {
 				sprintf(stringtowrite, "%d", cvar->value);
-			else
+			} else
 				strcpy(stringtowrite, cvar->string);
-
+			
 			fprintf(f, "%s \"%s\"\n", cvar->name, stringtowrite);
 		}
+	}
 }
 
 //============================================================================

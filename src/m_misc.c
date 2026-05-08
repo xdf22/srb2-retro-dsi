@@ -477,37 +477,28 @@ void M_SaveConfig(const char *filename)
 
 	// can change the file name
 	if (filename)
-	{
-		if (!strstr(filename, ".cfg"))
-		{
-			CONS_Printf("M_SaveConfig(): filename is not .cfg\n");
-			return;
-		}
-
+	{	
 		f = fopen(filename, "w");
+
 		// change it only if valid
-		if (f)
+		if (f) {
 			strcpy(configfile, filename);
-		else
-		{
-			CONS_Printf("Couldn't save game config file %s\n", filename);
-			return;
+			fclose(f);
 		}
 	}
-	else
+	
+	if (!strstr(configfile, ".cfg"))
 	{
-		if (!strstr(configfile, ".cfg"))
-		{
-			CONS_Printf("M_SaveConfig(): filename is not .cfg\n");
-			return;
-		}
+		CONS_Printf("M_SaveConfig(): filename is not .cfg\n");
+		return;
+	}
+	
+	f = fopen(configfile, "w");
 
-		f = fopen(configfile, "w");
-		if (!f)
-		{
-			CONS_Printf("Couldn't save game config file %s\n", configfile);
-			return;
-		}
+	if (!f)
+	{
+		CONS_Printf("Couldn't save game config file %s\n", configfile);
+		return;
 	}
 
 	// header message
@@ -515,7 +506,7 @@ void M_SaveConfig(const char *filename)
 
 	// FIXME: save key aliases if ever implemented..
 
-	CV_SaveVariables(f);
+	//CV_SaveVariables(f);
 	if (!dedicated) G_SaveKeySetting(f);
 
 	fclose(f);
