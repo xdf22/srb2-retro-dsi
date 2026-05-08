@@ -27,7 +27,7 @@
 #if defined(_NDS)
 extern boolean srb2_playsong;
 extern boolean srb2_loopsong;
-void streamingFillBuffer(void);
+void streamingFillBuffer(bool force_fill);
 #endif
 
 /**	\brief Sound subsystem runing and waiting

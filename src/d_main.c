@@ -618,7 +618,7 @@ void D_SRB2Loop(void)
 		
 		#if defined(_NDS)
 		if (srb2_playsong)
-			streamingFillBuffer();
+			streamingFillBuffer(false);
 		#endif
 
 #ifdef HW3SOUND
@@ -862,7 +862,7 @@ static void IdentifyVersion(void)
 	D_AddFile(va(pandf,srb2waddir,"drill.dta")); //drill.dta
 	D_AddFile(va(pandf,srb2waddir,"soar.dta")); //soar.dta
 
-#if (!defined (SDL) || defined (HAVE_MIXER)) && !defined (_NDS)
+#if (!defined (SDL) || defined (HAVE_MIXER))
 	{
 #if defined (DC) && 0
 		const char *musicfile = "music_dc.dta";

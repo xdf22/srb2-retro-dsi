@@ -10,6 +10,7 @@ set(SRB2_ASSET_ALL
 	${CMAKE_CURRENT_SOURCE_DIR}/installer/zones.dta
 	${CMAKE_CURRENT_SOURCE_DIR}/installer/drill.dta
     ${CMAKE_CURRENT_SOURCE_DIR}/installer/soar.dta
+	${CMAKE_CURRENT_SOURCE_DIR}/installer/music.dta
 )
 
 set(SRB2_ASSET_HASHED
@@ -21,6 +22,7 @@ set(SRB2_ASSET_HASHED
 	zones.dta
 	drill.dta
     soar.dta
+	music.dta
 )
 
 foreach(SRB2_ASSET ${SRB2_ASSET_HASHED})

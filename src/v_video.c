@@ -168,7 +168,7 @@ static void LoadPalette(const char *lumpname)
 	size_t i, palsize = W_LumpLength(lumpnum)/3;
 	UINT8 *pal;
 
-	Z_Free(pLocalPalette);
+	if (pLocalPalette) { Z_Free(pLocalPalette); }
 
 	pLocalPalette = Z_Malloc(sizeof (*pLocalPalette)*palsize, PU_STATIC, NULL);
 

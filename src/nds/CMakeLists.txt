@@ -1,6 +1,6 @@
 add_executable(SRB2DSI)
 
-target_link_libraries(SRB2DSI dswifi9)
+target_link_libraries(SRB2DSI mm9 dswifi9)
 
 set (SRB2_NDS_SOURCES
     i_main.c
@@ -29,9 +29,9 @@ target_sources(SRB2DSI PRIVATE ${SRB2_CORE_SOURCES} ${SRB2_CORE_RENDER_SOURCES} 
 target_compile_definitions(SRB2DSI PRIVATE -D_NDS -DNOIPX -DZDEBUG -DNOMD5)
 
 nds_create_rom(SRB2DSI
-    NAME "SRB2 Retro"
-    SUBTITLE "Place the holder"
-    AUTHOR "STJr"
+    NAME "Sonic Robo Blast 2"
+    SUBTITLE "Retro"
+    AUTHOR "Sonic Team Jr."
     ICON "icon.gif"
     NITROFS "${CMAKE_SOURCE_DIR}/assets/installer/"
 )

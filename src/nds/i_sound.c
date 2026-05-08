@@ -1,4 +1,8 @@
+#include "../byteptr.h"
+#include "../doomstat.h"
 #include "../i_sound.h"
+#include "../w_wad.h"
+#include "../z_zone.h"
 #include <filesystem.h>
 #include <maxmod9.h>
 #include <nds.h>
@@ -7,121 +11,99 @@
 boolean srb2_playsong = false;
 boolean srb2_loopsong = false;
 
-// streaming example thingy
+uint8_t *wavData;
+int wavLen;
+int wavPos = 0;
 
-#define DATA_ID 0x61746164
-#define FMT_ID  0x20746d66
-#define RIFF_ID 0x46464952
-#define WAVE_ID 0x45564157
-
-typedef struct WAVHeader
-{
-    // "RIFF" chunk descriptor
-    uint32_t chunkID;
-    uint32_t chunkSize;
-    uint32_t format;
-    // "fmt" subchunk
-    uint32_t subchunk1ID;
-    uint32_t subchunk1Size;
-    uint16_t audioFormat;
-    uint16_t numChannels;
-    uint32_t sampleRate;
-    uint32_t byteRate;
-    uint16_t blockAlign;
-    uint16_t bitsPerSample;
-    // "data" subchunk
-    uint32_t subchunk2ID;
-    uint32_t subchunk2Size;
-}
-WAVHeader_t;
-
-#define BUFFER_LENGTH 1024
-
-FILE *wavFile = NULL;
-
-uint8_t stream_buffer[BUFFER_LENGTH];
-uint32_t stream_buffer_in;
-uint32_t stream_buffer_out;
+int stream_buffer_in;
+int stream_buffer_out;
 
 mm_word streamingCallback(mm_word length,
                           mm_addr dest,
                           mm_stream_formats format)
 {
-    size_t bytes_until_end = BUFFER_LENGTH - stream_buffer_out;
-	
-	if (srb2_playsong)
-		if (bytes_until_end > length)
-		{
-			uint8_t *src_ = &stream_buffer[stream_buffer_out];
+    size_t bytes_until_end = wavLen - stream_buffer_out;
 
-			memcpy(dest, src_, length);
-			stream_buffer_out += length;
-		}
-		else
-		{
-			uint8_t *src_ = &stream_buffer[stream_buffer_out];
-			uint8_t *dst_ = dest;
+    if (bytes_until_end > length)
+    {
+        char *src_ = (char *)&wavData[stream_buffer_out];
 
-			memcpy(dst_, src_, bytes_until_end);
-			dst_ += bytes_until_end;
-			length -= bytes_until_end;
+        M_Memcpy(dest, src_, length);
+        stream_buffer_out += length;
+    }
+    else
+    {
+        char *src_ = (char *)&wavData[stream_buffer_out];
+        char *dst_ = dest;
 
-			src_ = &stream_buffer[0];
-			memcpy(dst_, src_, length);
-			stream_buffer_out = length;
-		}
+        M_Memcpy(dst_, src_, bytes_until_end);
+        dst_ += bytes_until_end;
+		length -= bytes_until_end;
+
+        src_ = (char *)&wavData[0];
+        M_Memcpy(dst_, src_, length);
+        stream_buffer_out = length;
+    }
 
     return length;
 }
 
-void readFile(uint8_t *buffer, size_t size)
+// This reads bytes from wavFile into the provided buffer. If the end of the
+// file is reached, it starts from the start again.
+void readFile(size_t size)
 {
 	if (!srb2_playsong)
 		return;
 	
     while (size > 0)
     {
-        int res = fread(buffer, 1, size, wavFile);
-        size -= res;
-        buffer += res;
+        size--;
+		wavPos++;
 
-        if (feof(wavFile))
+        if (wavPos >= wavLen-1)
         {
             // Loop back when song ends
+			
 			if (srb2_loopsong) {
-				fseek(wavFile, sizeof(WAVHeader_t), SEEK_SET);
-				res = fread(buffer, 1, size, wavFile);
-				size -= res;
-				buffer += res;
-			} else {
-				I_StopDigSong(); 
-				break;
-			}
-		}
+				wavPos = 0;
+				size--;
+				wavPos++;
+			} else
+				I_StopDigSong();
+        }
     }
 }
 
-void streamingFillBuffer(void)
+void streamingFillBuffer(bool force_fill)
 {
+    if (!force_fill)
+    {
+        if (stream_buffer_in == stream_buffer_out)
+            return;
+    }
+
     if (stream_buffer_in < stream_buffer_out)
     {
         size_t size = stream_buffer_out - stream_buffer_in;
-        readFile(&stream_buffer[stream_buffer_in], size);
+        readFile(size);
         stream_buffer_in += size;
     }
     else
     {
-        size_t size = BUFFER_LENGTH - stream_buffer_in;
-        readFile(&stream_buffer[stream_buffer_in], size);
+        size_t size = wavLen - stream_buffer_in;
+        readFile(size);
         stream_buffer_in = 0;
 
         size = stream_buffer_out - stream_buffer_in;
-        readFile(&stream_buffer[stream_buffer_in], size);
+        readFile(size);
         stream_buffer_in += size;
     }
 
-    if (stream_buffer_in >= BUFFER_LENGTH)
-        stream_buffer_in -= BUFFER_LENGTH;
+    if (stream_buffer_in >= wavLen-1)
+		if (srb2_loopsong) {
+			stream_buffer_in = stream_buffer_out = 0;
+		} else
+			I_StopDigSong();
 }
 
 UINT8 sound_started = 0;
@@ -138,8 +120,6 @@ void I_FreeSfx(sfxinfo_t *sfx)
 }
 
 void I_StartupSound(void){
-	soundEnable();
-	sound_started = 0;
 }
 
 void I_ShutdownSound(void){}
@@ -150,7 +130,8 @@ void I_ShutdownSound(void){}
 
 INT32 I_StartSound(sfxenum_t id, INT32 vol, INT32 sep, INT32 pitch, INT32 priority)
 {
-	return soundPlaySample(S_sfx[id].data, SoundFormat_8Bit, S_sfx[id].length, 8000, 127, 0, false, 0);
+	return -1;
+	//return soundPlaySample(S_sfx[id].data, SoundFormat_8Bit, S_sfx[id].length, 8000, 127, 0, false, 0);
 }
 
 void I_StopSound(INT32 handle)
@@ -183,22 +164,21 @@ void I_SetSfxVolume(INT32 volume)
 UINT8 music_started = 0;
 UINT8 digmusic_started = 0;
 mm_stream stream;
-WAVHeader_t wavHeader = { 0 };
 
 void I_InitMusic(void){
     mmInitNoSoundbank();
 	
-	stream.sampling_rate = wavHeader.sampleRate,
-    stream.buffer_length = 128,
+	stream.sampling_rate = 8000,
+    stream.buffer_length = 2048,
     stream.callback      = streamingCallback,
     stream.format        = MM_STREAM_8BIT_MONO,
     stream.timer         = MM_TIMER3,
     stream.manual        = false,
 
-	streamingFillBuffer();
+	streamingFillBuffer(true);
 
-	digmusic_started = 1;
 	music_started = 1;
+	digmusic_started = 1;
 }
 
 void I_ShutdownMusic(void){}
@@ -264,14 +244,29 @@ void I_ShutdownDigMusic(void){
 
 boolean I_StartDigSong(const char *musicname, INT32 looping)
 {
-	wavFile = fopen(va("nitro:/music/O_%s.wav", strupr(musicname)), "rb");
-
-	if (fread(&wavHeader, 1, sizeof(WAVHeader_t), wavFile) != sizeof(WAVHeader_t))
-        return false;
-
-	mmStreamClose();
-	stream.sampling_rate = wavHeader.sampleRate,
-    stream.buffer_length = 128,
+	if (nodigimusic) {
+		Z_Free(wavData);
+		return false;
+	}
+	
+	char filename[9];
+	lumpnum_t lumpnum;
+	size_t lumplength;
+	
+	snprintf(filename, sizeof filename, "o_%s\n", musicname);
+	strupr(filename);
+	if (W_CheckNumForName(filename) == LUMPERROR) {
+		CONS_Printf("can't find music %s", musicname);
+		return false;
+	}
+	
+	wavData = W_CacheLumpName(filename, PU_MUSIC);
+	wavLen = W_LumpLength(W_CheckNumForName(filename));
+	wavPos = 0;
+	
+	I_StopDigSong();
+	stream.sampling_rate = 8000,
+    stream.buffer_length = 2048,
     stream.callback      = streamingCallback,
     stream.format        = MM_STREAM_8BIT_MONO,
     stream.timer         = MM_TIMER3,
@@ -285,6 +280,8 @@ boolean I_StartDigSong(const char *musicname, INT32 looping)
 
 void I_StopDigSong(void){
 	srb2_playsong = false;
+	stream_buffer_in = 0;
+	stream_buffer_out = 0;
 	mmStreamClose();
 }
 

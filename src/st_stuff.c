@@ -130,10 +130,10 @@ static boolean prefixfreed[MAXPLAYERS];
 
 hudinfo_t hudinfo[NUMHUDITEMS] =
 {
-	{  16, 166}, // HUD_LIVESNAME
-	{  16, 176}, // HUD_LIVESPIC
-	{  68, 181}, // HUD_LIVESNUM
-	{  36, 184}, // HUD_LIVESX
+	{  16, 158}, // HUD_LIVESNAME
+	{  16, 168}, // HUD_LIVESPIC
+	{  68, 173}, // HUD_LIVESNUM
+	{  36, 176}, // HUD_LIVESX
 	{ 220,  10}, // HUD_RINGSSPLIT
 	{ 288,  10}, // HUD_RINGSNUMSPLIT
 	{  16,  42}, // HUD_RINGS
