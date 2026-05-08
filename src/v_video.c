@@ -40,9 +40,13 @@
 // Each screen is [vid.width*vid.height];
 UINT8 *screens[5];
 
+#ifndef _NDS
 static CV_PossibleValue_t ticrate_cons_t[] = {
 	{0, "Off"}, {1, "Counter"}, {2, "Graph"}, {3, "Both"},
 	{0, NULL}};
+#else
+static CV_PossibleValue_t ticrate_cons_t[] = {{0, "Off"}, {1, "On"}, {0, NULL}};
+#endif
 static CV_PossibleValue_t gamma_cons_t[] = {{0, "MIN"}, {4, "MAX"}, {0, NULL}};
 static void CV_usegamma_OnChange(void);
 

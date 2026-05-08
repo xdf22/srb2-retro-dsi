@@ -20,6 +20,7 @@
 
 #include "../doomdef.h"
 #include "../command.h"
+#include "../v_video.h"
 #include "../i_video.h"
 
 #include "../hardware/hw_drv.h"
@@ -37,6 +38,7 @@ u16 ds_palette[256];
 
 void I_StartupGraphics(void)
 {
+    CV_RegisterVar (&cv_vidwait);
 	VID_SetMode(1);
     graphics_started = true;
 }
@@ -111,7 +113,8 @@ void I_FinishUpdate(void)
     const int dst_w = 256;
     const int dst_h = 192;
 
-	SCR_DisplayTicRate();
+    if (cv_ticrate.value)
+	    SCR_DisplayTicRate();
 
     if (cv_fullscreen.value) // squished
     {
