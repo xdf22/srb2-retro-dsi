@@ -13,7 +13,8 @@ Win32_LIB_ASM_Release
 *.dgb
 *.debug
 *.debug.txt
-assets/installer/
+assets/installer/*
+!assets/installer/music.dta
 bin/
 objs/
 build/
