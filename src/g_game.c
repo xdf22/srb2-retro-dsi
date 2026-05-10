@@ -2585,6 +2585,26 @@ void G_LoadGameData(void)
 	grade = 0;
 	timesbeaten = 0;
 
+	#if defined(_NDS)
+	if (srb2_debug)
+	{
+		totalplaytime = UINT32_MAX;
+		grade = 4095;
+		modded = 0;
+		timesbeaten = 99;
+		
+		
+		for (i = 0; i < MAXEMBLEMS; i++)
+			emblemlocations[i].collected = true;
+		for (i = 0; i < NUMMAPS; i++)
+			mapvisited[i] = 1;
+		for (i = 0; i < NUMMAPS; i++)
+			timedata[i].time = 0;
+		
+		return;
+	}
+	#endif
+
 	length = FIL_ReadFile(va(pandf, srb2home, gamedatafilename), &savebuffer);
 	if (!length)
 	{

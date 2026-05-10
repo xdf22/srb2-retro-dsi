@@ -474,6 +474,11 @@ void M_SaveConfig(const char *filename)
 	// make sure not to write back the config until it's been correctly loaded
 	if (!gameconfig_loaded)
 		return;
+	
+	#if defined(_NDS)
+	if (srb2_debug)
+		return;
+	#endif
 
 	// can change the file name
 	if (filename)

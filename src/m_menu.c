@@ -5947,12 +5947,14 @@ static menuitem_t VideoOptionsMenu[] =
 	{IT_CALL|IT_WHITESTRING, NULL, "3D Card Options...",  M_OpenGLOption,    20},
 #endif
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                         NULL, "Brightness",          &cv_usegamma,      40},
+	                         NULL, "Brightness",          &cv_usegamma,      30},
 
-	{IT_STRING | IT_CVAR,    NULL, "V-SYNC",              &cv_vidwait,       50},
+	{IT_STRING | IT_CVAR,    NULL, "V-SYNC",              &cv_vidwait,       40},
 
-	{IT_STRING | IT_CVAR,    NULL, "Rain/Snow Density",   &cv_precipdensity, 80}, // Changed all to normal string Tails 11-30-2000
-	{IT_STRING | IT_CVAR,    NULL, "Rain/Snow Draw Dist", &cv_precipdist,    90}, // Changed all to normal string Tails 11-30-2000
+	{IT_STRING | IT_CVAR,	 NULL, "HOM Removal",			&cv_homremoval,	 60},
+	{IT_STRING | IT_CVAR,	 NULL, "Object Sim./Draw Dist.", &cv_objectdist,		70},
+	{IT_STRING | IT_CVAR,    NULL, "Weather Density",   &cv_precipdensity, 80}, // Changed all to normal string Tails 11-30-2000
+	{IT_STRING | IT_CVAR,    NULL, "Weather Draw Dist.", &cv_precipdist,    90}, // Changed all to normal string Tails 11-30-2000
 	{IT_STRING | IT_CVAR,    NULL, "FPS Meter",           &cv_ticrate,       100},
 };
 
@@ -5964,7 +5966,7 @@ menu_t VideoOptionsDef =
 	&OptionsDef,
 	VideoOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	24, 40,
 	0,
 	NULL
 };

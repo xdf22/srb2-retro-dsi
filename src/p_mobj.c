@@ -4832,6 +4832,31 @@ static boolean P_AddShield(mobj_t *thing)
 // AI for the Koopa boss.
 static void P_KoopaThinker(mobj_t *koopa)
 {
+	if (koopa->type != MT_PLAYER && !netgame) {
+		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
+		
+		adx = abs(players[displayplayer].mo->x - koopa->x);
+		ady = abs(players[displayplayer].mo->y - koopa->y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx2 = abs(players[secondarydisplayplayer].mo->x - koopa->x);
+			ady2 = abs(players[secondarydisplayplayer].mo->y - koopa->y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist2 = adx2 + ady2 - ((adx2 < ady2 ? adx2 : ady2)>>1);
+
+			if (approx_dist2 >= (cv_objectdist.value << FRACBITS))
+				if (approx_dist >= (cv_objectdist.value << FRACBITS))
+					return;
+		}
+		else if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+	}
+	
 	P_MobjCheckWater(koopa);
 
 	if (koopa->watertop > koopa->z + koopa->height + 128*FRACUNIT && koopa->health > 0)
@@ -4893,6 +4918,31 @@ void P_MobjThinker(mobj_t *mobj)
 {
 	if (mobj->flags & MF_NOTHINK)
 		return;
+	
+	if (mobj->type != MT_PLAYER && !netgame) {
+		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
+
+		adx = abs(players[displayplayer].mo->x - mobj->x);
+		ady = abs(players[displayplayer].mo->y - mobj->y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx2 = abs(players[secondarydisplayplayer].mo->x - mobj->x);
+			ady2 = abs(players[secondarydisplayplayer].mo->y - mobj->y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist2 = adx2 + ady2 - ((adx2 < ady2 ? adx2 : ady2)>>1);
+
+			if (approx_dist2 >= (cv_objectdist.value << FRACBITS))
+				if (approx_dist >= (cv_objectdist.value << FRACBITS))
+					return;
+		}
+		else if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+	}
 
 	mobj->flags2 &= ~MF2_PUSHED;
 
@@ -4958,6 +5008,13 @@ void P_MobjThinker(mobj_t *mobj)
 	// Special thinker for scenery objects
 	if (mobj->flags & MF_SCENERY)
 	{
+		if (!netgame) {
+			angle_t an = R_PointToAngle2(camera.x, camera.y, mobj->x, mobj->y) - camera.angle;
+
+			if (an > ANGLE_45 && an < ANGLE_315)
+				return; // behind back
+		}
+		
 		switch (mobj->type)
 		{
 			case MT_HOOP:
@@ -6176,6 +6233,31 @@ void P_MobjThinker(mobj_t *mobj)
 // Quick, optimized function for the Rail Rings
 void P_RailThinker(mobj_t *mobj)
 {
+	if (mobj->type != MT_PLAYER && !netgame) {
+		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
+		
+		adx = abs(players[displayplayer].mo->x - mobj->x);
+		ady = abs(players[displayplayer].mo->y - mobj->y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx2 = abs(players[secondarydisplayplayer].mo->x - mobj->x);
+			ady2 = abs(players[secondarydisplayplayer].mo->y - mobj->y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist2 = adx2 + ady2 - ((adx2 < ady2 ? adx2 : ady2)>>1);
+
+			if (approx_dist2 >= (cv_objectdist.value << FRACBITS))
+				if (approx_dist >= (cv_objectdist.value << FRACBITS))
+					return;
+		}
+		else if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+	}
+	
 	// momentum movement
 	if (mobj->momx || mobj->momy)
 	{
@@ -6200,6 +6282,31 @@ void P_RailThinker(mobj_t *mobj)
 // Unquick, unoptimized function for pushables
 void P_PushableThinker(mobj_t *mobj)
 {
+	if (mobj->type != MT_PLAYER && !netgame) {
+		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
+		
+		adx = abs(players[displayplayer].mo->x - mobj->x);
+		ady = abs(players[displayplayer].mo->y - mobj->y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx2 = abs(players[secondarydisplayplayer].mo->x - mobj->x);
+			ady2 = abs(players[secondarydisplayplayer].mo->y - mobj->y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist2 = adx2 + ady2 - ((adx2 < ady2 ? adx2 : ady2)>>1);
+
+			if (approx_dist2 >= (cv_objectdist.value << FRACBITS))
+				if (approx_dist >= (cv_objectdist.value << FRACBITS))
+					return;
+		}
+		else if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+	}
+	
 	sector_t *sec;
 
 	sec = mobj->subsector->sector;
@@ -6265,6 +6372,31 @@ void P_PushableThinker(mobj_t *mobj)
 // Quick, optimized function for scenery
 void P_SceneryThinker(mobj_t *mobj)
 {
+	if (mobj->type != MT_PLAYER && !netgame) {
+		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
+		
+		adx = abs(players[displayplayer].mo->x - mobj->x);
+		ady = abs(players[displayplayer].mo->y - mobj->y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx2 = abs(players[secondarydisplayplayer].mo->x - mobj->x);
+			ady2 = abs(players[secondarydisplayplayer].mo->y - mobj->y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist2 = adx2 + ady2 - ((adx2 < ady2 ? adx2 : ady2)>>1);
+
+			if (approx_dist2 >= (cv_objectdist.value << FRACBITS))
+				if (approx_dist >= (cv_objectdist.value << FRACBITS))
+					return;
+		}
+		else if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+	}
+	
 	if (mobj->flags & MF_BOXICON)
 	{
 		if (!(mobj->eflags & MFE_VERTICALFLIP))

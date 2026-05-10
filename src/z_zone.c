@@ -81,7 +81,7 @@ typedef struct memblock_s
 } ATTRPACK memblock_t;
 
 #ifdef ZDEBUG
-#define Ptr2Memblock(s, f) Ptr2Memblock2(s, f, __FILE__, __LINE__)
+#define Ptr2Memblock(s, f) (s, f, __FILE__, __LINE__)
 static memblock_t *Ptr2Memblock2(void *ptr, const char* func, const char *file, INT32 line)
 #else
 static memblock_t *Ptr2Memblock(void *ptr, const char* func)

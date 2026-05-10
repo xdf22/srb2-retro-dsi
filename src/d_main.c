@@ -104,7 +104,10 @@ int	snprintf(char *str, size_t n, const char *fmt, ...);
 #endif
 
 #if defined(_NDS)
+#include <nds.h>
 #include <fat.h>
+
+boolean srb2_debug = false;
 #endif
 
 //
@@ -1207,7 +1210,26 @@ void D_SRB2Main(void)
 	I_RegisterSysCommands();
 
 	//--------------------------------------------------------- CONFIG.CFG
+	#if defined(_NDS)
+	{
+		ssize_t len;
+		char name[50];
+		
+		len = utf16_to_utf8(name, sizeof(name), (char16_t *)PersonalData->name,
+		PersonalData->nameLen * sizeof(char16_t));
+		
+		if (len > 1) {
+			COM_BufAddText(va("name \"%s\"", name));
+		
+			if (!strcmp(name, "debug"))
+				srb2_debug = true;
+		}
+		
+		M_FirstLoadConfig();
+	}
+	#else
 	M_FirstLoadConfig(); // WARNING : this do a "COM_BufExecute()"
+	#endif
 
 	if (!M_CheckParm("-resetdata"))
 		G_LoadGameData();

@@ -89,9 +89,11 @@ subsector_t *R_IsPointInSubsector(fixed_t x, fixed_t y);
 
 extern consvar_t cv_showhud;
 extern consvar_t cv_limitdraw;
+extern consvar_t cv_homremoval;
 extern consvar_t cv_grtranslucenthud;
 extern consvar_t cv_chasecam, cv_chasecam2;
 extern consvar_t cv_shadow;
+extern consvar_t cv_objectdist;
 extern consvar_t cv_precipdensity, cv_precipdist;
 extern consvar_t cv_tailspickup;
 extern consvar_t cv_shadowoffs;

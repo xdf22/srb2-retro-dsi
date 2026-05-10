@@ -234,6 +234,11 @@ INT32 I_GetKey(void);
 // Compile date and time and revision.
 extern const char *compdate, *comptime, *comprevision;
 
+// nds specific code
+#if defined(_NDS)
+extern boolean srb2_debug;
+#endif
+
 // Disabled code and code under testing
 
 //#define SLOPENESS // Fun experimental slope stuff!

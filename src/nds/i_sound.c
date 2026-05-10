@@ -22,6 +22,9 @@ mm_word streamingCallback(mm_word length,
                           mm_addr dest,
                           mm_stream_formats format)
 {
+	if (!srb2_playsong)
+		return 0;
+	
     size_t bytes_until_end = wavLen - stream_buffer_out;
 
     if (bytes_until_end > length)
@@ -81,6 +84,9 @@ void streamingFillBuffer(bool force_fill)
         if (stream_buffer_in == stream_buffer_out)
             return;
     }
+	
+	if (!srb2_playsong)
+		return;
 
     if (stream_buffer_in < stream_buffer_out)
     {
@@ -167,18 +173,7 @@ mm_stream stream;
 
 void I_InitMusic(void){
     mmInitNoSoundbank();
-	
-	stream.sampling_rate = 8000,
-    stream.buffer_length = 2048,
-    stream.callback      = streamingCallback,
-    stream.format        = MM_STREAM_8BIT_MONO,
-    stream.timer         = MM_TIMER3,
-    stream.manual        = false,
-
-	streamingFillBuffer(true);
-
 	music_started = 1;
-	digmusic_started = 1;
 }
 
 void I_ShutdownMusic(void){}
@@ -237,9 +232,23 @@ void I_UnRegisterSong(INT32 handle)
 //
 
 void I_InitDigMusic(void){
+	soundEnable();
+	
+	stream.sampling_rate = 8000,
+    stream.buffer_length = 2048,
+    stream.callback      = streamingCallback,
+    stream.format        = MM_STREAM_8BIT_MONO,
+    stream.timer         = MM_TIMER3,
+    stream.manual        = false,
+
+	streamingFillBuffer(true);
+
+	digmusic_started = 1;
 }
 
 void I_ShutdownDigMusic(void){
+	mmStreamClose();
+	soundDisable();
 }
 
 boolean I_StartDigSong(const char *musicname, INT32 looping)
@@ -255,10 +264,8 @@ boolean I_StartDigSong(const char *musicname, INT32 looping)
 	
 	snprintf(filename, sizeof filename, "o_%s\n", musicname);
 	strupr(filename);
-	if (W_CheckNumForName(filename) == LUMPERROR) {
-		CONS_Printf("can't find music %s", musicname);
+	if (W_CheckNumForName(filename) == LUMPERROR)
 		return false;
-	}
 	
 	wavData = W_CacheLumpName(filename, PU_MUSIC);
 	wavLen = W_LumpLength(W_CheckNumForName(filename));
@@ -280,6 +287,7 @@ boolean I_StartDigSong(const char *musicname, INT32 looping)
 
 void I_StopDigSong(void){
 	srb2_playsong = false;
+	srb2_loopsong = false;
 	stream_buffer_in = 0;
 	stream_buffer_out = 0;
 	mmStreamClose();
@@ -293,6 +301,6 @@ void I_SetDigMusicVolume(INT32 volume)
 
 boolean I_SetSongSpeed(float speed)
 {
-	(void)speed;
-	return false;
+	stream.sampling_rate = (int)((float)stream.sampling_rate * speed);
+	return true;
 }

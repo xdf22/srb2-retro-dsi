@@ -33,7 +33,9 @@
 #define FUNCALLOC(x)
 #endif
 
+#ifndef ZDEBUG
 //#define ZDEBUG
+#endif
 
 //
 // ZONE MEMORY

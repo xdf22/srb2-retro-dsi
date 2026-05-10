@@ -8,6 +8,10 @@
 
 int main(int argc, char **argv)
 {
+	// wait for a few frames so we can get NDS firmware data
+	swiWaitForVBlank();
+    swiWaitForVBlank();
+	
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
 
@@ -22,7 +26,7 @@ int main(int argc, char **argv)
 	if (!fatInitDefault())
 		I_Error("Failed to initialize FAT!\n");
     
-	// start NitroFS (unused outside of MelonDS)
+	// start NitroFS (unused)
 	/*
 	if (!nitroFSInit(NULL))
 		I_Error("Failed to initialize NitroFS!\n");
