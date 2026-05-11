@@ -1120,6 +1120,31 @@ static boolean Polyobj_moveXY(polyobj_t *po, fixed_t x, fixed_t y)
 	if (po->isBad)
 		return false;
 
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return false;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return false;
+		}
+	}
+
 	// translate vertices
 	for (i = 0; i < po->numVertices; ++i)
 		Polyobj_vecAdd(po->vertices[i], &vec);
@@ -1237,6 +1262,31 @@ static boolean Polyobj_rotate(polyobj_t *po, angle_t delta)
 	// don't move bad polyobjects
 	if (po->isBad)
 		return false;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return false;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return false;
+		}
+	}
 
 	angle = (po->angle + delta) >> ANGLETOFINESHIFT;
 
@@ -1480,6 +1530,31 @@ void Polyobj_InitLevel(void)
 void Polyobj_MoveOnLoad(polyobj_t *po, angle_t angle, fixed_t x, fixed_t y)
 {
 	fixed_t dx, dy;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
 
 	// first, rotate to the saved angle
 	Polyobj_rotate(po, angle);
@@ -1513,6 +1588,31 @@ void T_PolyObjRotate(polyrotate_t *th)
 		return;
 	}
 #endif
+
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
 
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
@@ -1586,6 +1686,31 @@ void T_PolyObjMove(polymove_t *th)
 	}
 #endif
 
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
+
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
 	{
@@ -1658,6 +1783,31 @@ void T_PolyObjWaypoint(polywaypoint_t *th)
 		return;
 	}
 #endif
+
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
 
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
@@ -1923,6 +2073,31 @@ void T_PolyDoorSlide(polyslidedoor_t *th)
 	}
 #endif
 
+if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
+
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
 	{
@@ -2027,6 +2202,31 @@ void T_PolyDoorSwing(polyswingdoor_t *th)
 		return;
 	}
 #endif
+
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
 
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
@@ -2133,6 +2333,31 @@ INT32 EV_DoPolyObjRotate(polyrotdata_t *prdata)
 	// don't allow line actions to affect bad polyobjects
 	if (po->isBad)
 		return 0;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return 0;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return 0;
+		}
+	}
 
 	// check for override if this polyobj already has a thinker
 	if (po->thinker && !prdata->overRide)
@@ -2194,6 +2419,31 @@ INT32 EV_DoPolyObjMove(polymovedata_t *pmdata)
 	// don't allow line actions to affect bad polyobjects
 	if (po->isBad)
 		return 0;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return 0;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return 0;
+		}
+	}
 
 	// check for override if this polyobj already has a thinker
 	if (po->thinker && !pmdata->overRide)
@@ -2254,6 +2504,31 @@ INT32 EV_DoPolyObjWaypoint(polywaypointdata_t *pwdata)
 	// don't allow line actions to affect bad polyobjects
 	if (po->isBad)
 		return 0;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return 0;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return 0;
+		}
+	}
 
 	if (po->thinker) // Don't crowd out another thinker.
 		return 0;
@@ -2497,6 +2772,31 @@ INT32 EV_DoPolyDoor(polydoordata_t *doordata)
 	// polyobject doors don't allow action overrides
 	if (po->isBad || po->thinker)
 		return 0;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return 0;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return 0;
+		}
+	}
 
 	switch (doordata->doorType)
 	{
@@ -2530,6 +2830,31 @@ void T_PolyObjFlag(polymove_t *th)
 		return;
 	}
 #endif
+
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return;
+		}
+	}
 
 	// check for displacement due to override and reattach when possible
 	if (po->thinker == NULL)
@@ -2580,6 +2905,31 @@ INT32 EV_DoPolyObjFlag(line_t *pfdata)
 	// polyobject doors don't allow action overrides
 	if (po->isBad || po->thinker)
 		return 0;
+	
+	if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS))
+			return 0;
+		else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS))
+				return 0;
+		}
+	}
 
 	// Must have even # of vertices
 	if (po->numVertices & 1)

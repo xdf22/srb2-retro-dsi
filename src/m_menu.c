@@ -49,6 +49,8 @@
 #include "sounds.h"
 #include "s_sound.h"
 #include "i_system.h"
+#include "i_net.h"
+#include "i_tcp.h"
 
 #include "m_menu.h"
 
@@ -81,6 +83,7 @@
 
 #ifdef _NDS
 #include <nds.h>
+#include <dswifi9.h>
 boolean keyboardActive = false;
 #endif
 
@@ -155,6 +158,7 @@ static saveinfo_t savegameinfo[10]; // Extra info about the save games.
 
 #ifndef NONET
 static char setupm_ip[16];
+static char setupm_port[6];
 #endif
 INT16 startmap; // Mario, NiGHTS, or just a plain old normal game?
 
@@ -779,7 +783,7 @@ static void M_Connect(INT32 choice)
 static void M_ConnectIP(INT32 choice)
 {
 	(void)choice;
-	COM_BufAddText(va("connect %s\n", setupm_ip));
+	COM_BufAddText(va("connect %s %s\n", setupm_ip, setupm_port));
 
 	// A little "please wait" message.
 	M_DrawTextBox(56, BASEVIDHEIGHT/2-12, 24, 2);
@@ -1047,6 +1051,7 @@ static void M_HandleConnectIP(INT32 choice);
 static menuitem_t  ConnectIPMenu[] =
 {
 	{IT_KEYHANDLER | IT_STRING, NULL, "  IP Address:", M_HandleConnectIP, 0},
+	{IT_KEYHANDLER | IT_STRING, NULL, "  Port:", M_HandleConnectIP, 10},
 };
 
 static menuitem_t  RoomInfoMenu[] =
@@ -3490,7 +3495,7 @@ menu_t  MultiPlayerDef =
 	&MainDef,
 	MultiPlayerMenu,
 	M_DrawGenericMenu,
-	85,40,
+	BASEVIDWIDTH/2 - 75,40,
 	0,
 	NULL
 };
@@ -3635,7 +3640,7 @@ menu_t PlayerDef =
 	&MainDef,
 	PlayerMenu,
 	M_DrawSetupChoosePlayerMenu,
-	24, 16,
+	32, 16,
 	0,
 	M_QuitChoosePlayerMenu
 };
@@ -3714,11 +3719,15 @@ static void M_DrawConnectIPMenu(void)
 	// draw name string
 //	M_DrawTextBox(82,8,MAXPLAYERNAME,1);
 	V_DrawString (128,40,0,setupm_ip);
+	V_DrawString (128,50,0,setupm_port);
 
 	// draw text cursor for name
 	if (itemOn == 0 &&
 	    skullAnimCounter < 4)   //blink cursor
 		V_DrawCharacter(128+V_StringWidth(setupm_ip),40,'_',false);
+	if (itemOn == 1 &&
+	    skullAnimCounter < 4)   //blink cursor
+		V_DrawCharacter(128+V_StringWidth(setupm_port),50,'_',false);
 }
 #endif
 
@@ -3753,15 +3762,21 @@ static void M_DrawSetupMultiPlayerMenu(void)
 	M_DrawGenericMenu();
 
 	// draw name string
-	M_DrawTextBox(mx + 90, my - 8, MAXPLAYERNAME, 1);
-	V_DrawString(mx + 98, my, V_ALLOWLOWERCASE, setupm_name);
+	M_DrawTextBox(mx + 74, my - 8, MAXPLAYERNAME, 1);
+	V_DrawString(mx + 82, my, V_ALLOWLOWERCASE, setupm_name);
 
 	// draw skin string
 	V_DrawString(mx + 90, my + 96, 0, setupm_cvskin->string);
 
 	// draw the name of the color you have chosen
 	// Just so people don't go thinking that "Default" is Green.
-	V_DrawString(208, 72, 0, setupm_cvcolor->string);
+	char colorname[33];
+	strcpy(colorname, setupm_cvcolor->string);
+	for (int i = 0; i < (int)strlen(colorname); i++)
+		if (colorname[i] == '_')
+			colorname[i] = '\n';
+	
+	V_DrawString(mx, my+28, 0, colorname);
 
 	// draw text cursor for name
 	if (!itemOn && skullAnimCounter < 4) // blink cursor
@@ -3828,6 +3843,14 @@ static void M_HandleConnectIP(INT32 choice)
 		case KEY_ESCAPE:
 			exitmenu = true;
 			break;
+			
+		case KEY_UPARROW:
+		case KEY_DOWNARROW:
+			if (itemOn == 0)
+				itemOn = 1;
+			else
+				itemOn = 0;
+			break;
 
 		case KEY_BACKSPACE:
 			if ((l = strlen(setupm_ip))!=0 && itemOn == 0)
@@ -3835,16 +3858,29 @@ static void M_HandleConnectIP(INT32 choice)
 				S_StartSound(NULL,sfx_menu1); // Tails
 				setupm_ip[l-1] =0;
 			}
+			if ((l = strlen(setupm_port))!=0 && itemOn == 1)
+			{
+				S_StartSound(NULL,sfx_menu1); // Tails
+				setupm_port[l-1] =0;
+			}
 			break;
 
 		default:
 #define ALLOW_NUMPAD
-			l = strlen(setupm_ip);
+			if (itemOn == 0)
+				l = strlen(setupm_ip);
+			else
+				l = strlen(setupm_port);
 			if (l < 16-1 && (choice == 46 || (choice >= 48 && choice <= 57))) // Rudimentary number and period enforcing
 			{
 				S_StartSound(NULL,sfx_menu1); // Tails
-				setupm_ip[l] =(char)choice;
-				setupm_ip[l+1] =0;
+				if (itemOn == 0) {
+					setupm_ip[l] =(char)choice;
+					setupm_ip[l+1] =0;
+				} else {
+					setupm_port[l] =(char)choice;
+					setupm_port[l+1] =0;	
+				}
 			}
 #ifdef ALLOW_NUMPAD
 			else if (l < 16-1 && choice >= 199 && choice <= 211 && choice != 202 && choice != 206) //numpad too!
@@ -3852,8 +3888,13 @@ static void M_HandleConnectIP(INT32 choice)
 				XBOXSTATIC char keypad_translation[] = {'7','8','9','-','4','5','6','+','1','2','3','0','.'};
 				choice = keypad_translation[choice - 199];
 				S_StartSound(NULL,sfx_menu1); // Tails
-				setupm_ip[l] =(char)choice;
-				setupm_ip[l+1] =0;
+				if (itemOn == 0) {
+					setupm_ip[l] =(char)choice;
+					setupm_ip[l+1] =0;
+				} else {
+					setupm_port[l] =(char)choice;
+					setupm_port[l+1] =0;	
+				}
 			}
 #endif
 			break;
@@ -4813,7 +4854,7 @@ menu_t TimeAttackDef =
 	&SinglePlayerDef,
 	TimeAttackMenu,
 	M_DrawTimeAttackMenu,
-	40, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -4994,7 +5035,7 @@ menu_t DataOptionsDef =
 	&GameOptionDef,
 	DataOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -5064,7 +5105,7 @@ menu_t ControlsDef =
 	&OptionsDef,
 	ControlsMenu,
 	M_DrawGenericMenu,
-	60, 24,
+	32, 24,
 	0,
 	NULL
 };
@@ -5088,7 +5129,7 @@ menu_t OnePControlsDef =
 	&ControlsDef,
 	OnePControlsMenu,
 	M_DrawGenericMenu,
-	60, 24,
+	32, 24,
 	0,
 	NULL
 };
@@ -5112,7 +5153,7 @@ menu_t TwoPControlsDef =
 	&ControlsDef,
 	TwoPControlsMenu,
 	M_DrawGenericMenu,
-	60, 24,
+	32, 24,
 	0,
 	NULL
 };
@@ -5428,12 +5469,12 @@ static void M_DrawCustomChecklist(void)
 			continue;
 
 		V_DrawString(8, 8+(24*numcustom), V_RETURN8, customsecretinfo[i].name);
-		V_DrawString(160, 8+(24*numcustom), V_RETURN8|V_WORDWRAP, customsecretinfo[i].objective);
+		V_DrawString(BASEVIDWIDTH/2, 8+(24*numcustom), V_RETURN8|V_WORDWRAP, customsecretinfo[i].objective);
 
 		if (checklist[i].unlocked)
-			V_DrawString(308, 8+(24*numcustom), V_YELLOWMAP, "Y");
+			V_DrawString(BASEVIDWIDTH-12, 8+(24*numcustom), V_YELLOWMAP, "Y");
 		else
-			V_DrawString(308, 8+(24*numcustom), V_YELLOWMAP, "N");
+			V_DrawString(BASEVIDWIDTH-12, 8+(24*numcustom), V_YELLOWMAP, "N");
 
 		numcustom++;
 
@@ -5462,7 +5503,7 @@ menu_t UnlockChecklistDef =
 	&SecretsDef,
 	UnlockChecklistMenu,
 	M_DrawUnlockChecklist,
-	280, 185,
+	BASEVIDWIDTH/2 + 120, 185,
 	0,
 	NULL
 };
@@ -5487,7 +5528,7 @@ menu_t CustomChecklistDef =
 	&CustomSecretsDef,
 	CustomChecklistMenu,
 	M_DrawCustomChecklist,
-	280, 185,
+	BASEVIDWIDTH/2 + 120, 185,
 	0,
 	NULL
 };
@@ -5562,7 +5603,7 @@ menu_t SecretsDef =
 	&MainDef,
 	SecretsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -5624,7 +5665,7 @@ menu_t CustomSecretsDef =
 	&MainDef,
 	CustomSecretsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -5723,7 +5764,7 @@ static void M_DrawLevelSelectMenu(void)
 		else
 			PictureOfLevel = W_CachePatchName("BLANKLVL", PU_CACHE);
 
-		V_DrawSmallScaledPatch(200, 110, 0, PictureOfLevel);
+		V_DrawSmallScaledPatch((BASEVIDWIDTH*3/4)-(SHORT(PictureOfLevel->width)/4), ((BASEVIDHEIGHT*3/4)-(SHORT(PictureOfLevel->height)/4)+10), 0, PictureOfLevel);
 	}
 }
 
@@ -5742,7 +5783,7 @@ menu_t LevelSelectDef =
 	&SecretsDef,
 	LevelSelectMenu,
 	M_DrawLevelSelectMenu,
-	40, 40,
+	27, 40,
 	0,
 	NULL
 };
@@ -5938,6 +5979,7 @@ static void M_DrawSlider(INT32 x, INT32 y, const consvar_t *cv)
 static menuitem_t VideoOptionsMenu[] =
 {
 	// Tails
+#ifndef _NDS
 	{IT_STRING | IT_SUBMENU, NULL, "Video Modes...",      &VidModeDef,        0},
 #if defined (__unix__) || defined (UNIXCOMMON) || defined (SDL)
 	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",          &cv_fullscreen,    10},
@@ -5945,6 +5987,7 @@ static menuitem_t VideoOptionsMenu[] =
 #if defined (HWRENDER) && defined (SHUFFLE)
 	//17/10/99: added by Hurdler
 	{IT_CALL|IT_WHITESTRING, NULL, "3D Card Options...",  M_OpenGLOption,    20},
+#endif
 #endif
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
 	                         NULL, "Brightness",          &cv_usegamma,      30},
@@ -5966,19 +6009,55 @@ menu_t VideoOptionsDef =
 	&OptionsDef,
 	VideoOptionsMenu,
 	M_DrawGenericMenu,
-	24, 40,
+	32, 40,
 	0,
 	NULL
 };
 
 // retro options
 
+#ifdef _NDS
+static void EnableWifi(void)
+{
+	Wifi_InitDefault(WFC_CONNECT|WIFI_ATTEMPT_DSI_MODE);
+	
+	int status = Wifi_AssocStatus();
+ 
+	if (status == ASSOCSTATUS_CANNOTCONNECT)
+	{
+		CONS_Printf("Couldn't connect to an Access Point!\n");
+	}
+ 
+	if (status == ASSOCSTATUS_ASSOCIATED)
+	{
+		CONS_Printf("Connected to an Access Point!\n");
+	}
+}
+#endif
+
 static menuitem_t RetroMenu[] =
 {
-	{IT_STRING|IT_CVAR,   NULL, "Squish to DS screen",      &cv_fullscreen,    10},
+	#if defined(_NDS)
+	{IT_SUBMENU | IT_STRING, NULL, "DSi Optimizations...", &DSiOptsDef, 10},
+	{IT_CALL | IT_STRING, NULL, "Enable WiFi",			EnableWifi,     20},
+	#endif
+	
+	#ifdef HAVE_ANIGIF
 	{IT_CVAR | IT_STRING, NULL, "GIF Optimization",			&cv_gif_optimize,  30},
 	{IT_CVAR | IT_STRING, NULL, "GIF Downscaling", 			&cv_gif_downscale, 40},
+	#endif
 };
+
+#ifdef _NDS
+static void DrawRetroMenuDSi(void) {
+	M_DrawGenericMenu();
+	
+	V_DrawString(32, DSiOptsDef.y+40, 0, "Wifi Enabled:");
+	if (Wifi_CheckInit())
+		V_DrawString(BASEVIDWIDTH - 40, DSiOptsDef.y+40, V_GREENMAP, "Y");
+	else
+		V_DrawString(BASEVIDWIDTH - 40, DSiOptsDef.y+40, 0, "\x85N");
+}
 
 menu_t RetroDef =
 {
@@ -5987,11 +6066,57 @@ menu_t RetroDef =
 	sizeof (RetroMenu)/sizeof (menuitem_t),
 	&OptionsDef,
 	RetroMenu,
-	M_DrawGenericMenu,
-	60, 40,
+	DrawRetroMenuDSi,
+	32, 40,
 	0,
 	NULL
 };
+#else
+menu_t RetroDef =
+{
+	"M_OPTTTL",
+	"OPTIONS",
+	sizeof (RetroMenu)/sizeof (menuitem_t),
+	&OptionsDef,
+	RetroMenu,
+	M_DrawGenericMenu,
+	32, 40,
+	0,
+	NULL
+};
+#endif
+
+#if defined(_NDS)
+static menuitem_t DSiOptsMenu[] =
+{
+	{IT_CVAR | IT_STRING, NULL, "Mobj Opts.",     		&cv_mobjopt,    10},
+	{IT_CVAR | IT_STRING, NULL, "Texture Opts.",     	&cv_texopt,     20},
+	{IT_CVAR | IT_STRING, NULL, "Polyobject Opts.",     &cv_pobjopt,    30},
+	{IT_CVAR | IT_STRING, NULL, "Scr. Downscale",		&cv_screendiv,  70},
+	{IT_CVAR | IT_STRING, NULL, "Limited Draw",     	&cv_limiteddraw,80},
+};
+
+static void DrawDSiOpts(void)
+{
+	M_DrawGenericMenu();
+
+	V_DrawCenteredString(BASEVIDWIDTH/2, DSiOptsDef.y+50, 0, "\x85""Experimental");
+}
+
+menu_t DSiOptsDef =
+{
+	"M_OPTTTL",
+	"OPTIONS",
+	sizeof (DSiOptsMenu)/sizeof (menuitem_t),
+	&RetroDef,
+	DSiOptsMenu,
+	DrawDSiOpts,
+	32, 40,
+	0,
+	NULL
+};
+
+#endif
 
 //===========================================================================
 //                        Mouse OPTIONS MENU
@@ -6018,7 +6143,7 @@ menu_t MouseOptionsDef =
 	&OptionsDef,
 	MouseOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6050,7 +6175,7 @@ menu_t GameOptionDef =
 	&OptionsDef,
 	GameOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6103,7 +6228,7 @@ menu_t NetOptionDef =
 	&MultiPlayerDef,
 	NetOptionsMenu,
 	M_DrawGenericMenu,
-	60, 30,
+	32, 30,
 	0,
 	NULL
 };
@@ -6129,7 +6254,7 @@ menu_t GametypeOptionsDef =
 	&OptionsDef,
 	GametypeOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6151,7 +6276,7 @@ menu_t CoopOptionsDef =
 	&GametypeOptionsDef,
 	CoopOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6175,7 +6300,7 @@ menu_t RaceOptionsDef =
 	&GametypeOptionsDef,
 	RaceOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6199,7 +6324,7 @@ menu_t MatchOptionsDef =
 	&GametypeOptionsDef,
 	MatchOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6221,7 +6346,7 @@ menu_t TagOptionsDef =
 	&GametypeOptionsDef,
 	TagOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6246,7 +6371,7 @@ menu_t CTFOptionsDef =
 	&GametypeOptionsDef,
 	CTFOptionsMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6279,7 +6404,7 @@ menu_t MonitorToggleDef =
 	&NetOptionDef,
 	MonitorToggleMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6376,7 +6501,7 @@ menu_t ReadDef1 =
 	NULL,
 	ReadMenu1,
 	M_DrawReadThis1,
-	330, 165,
+	BASEVIDWIDTH+10, 165,
 	0,
 	NULL
 };
@@ -6414,7 +6539,7 @@ menu_t ReadDef2 =
 	NULL,
 	ReadMenu2,
 	M_DrawReadThis2,
-	330, 175,
+	BASEVIDWIDTH+10, 175,
 	0,
 	NULL
 };
@@ -6564,7 +6689,7 @@ menu_t SoundDef =
 	&OptionsDef,
 	SoundMenu,
 	M_DrawGenericMenu,
-	60, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6713,7 +6838,7 @@ menu_t ControlDef =
 	&ControlsDef,
 	ControlMenu,
 	M_DrawControl,
-	24, 40,
+	32, 40,
 	0,
 	NULL
 };
@@ -6756,7 +6881,7 @@ menu_t ControlDef2 =
 	&ControlsDef,
 	ControlMenu2,
 	M_DrawControl,
-	24, 40,
+	32, 40,
 	0,
 	NULL
 };

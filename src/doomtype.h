@@ -39,7 +39,7 @@
 #define INT64  __int64
 #define UINT64 unsigned __int64
 
-typedef long ssize_t;
+typedef INT32 ssize_t;
 
 /* Older Visual C++ headers don't have the Win64-compatible typedefs... */
 #if (_MSC_VER <= 1200)

@@ -164,6 +164,10 @@ extern menu_t RewardDef, LevelSelectDef, JoystickDef, TimeAttackDef;
 extern menu_t StatsDef, Stats2Def, Stats3Def, Stats4Def, PlayerDef;
 extern menu_t CoopOptionsDef, RaceOptionsDef, MatchOptionsDef, TagOptionsDef, CTFOptionsDef;
 
+#ifdef _NDS
+extern menu_t DSiOptsDef;
+#endif
+
 #ifdef HWRENDER
 extern menu_t OGL_LightingDef, OGL_FogDef, OGL_ColorDef;
 #ifndef HARDWAREFIX

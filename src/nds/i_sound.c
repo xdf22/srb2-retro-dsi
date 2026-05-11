@@ -247,8 +247,10 @@ void I_InitDigMusic(void){
 }
 
 void I_ShutdownDigMusic(void){
+	Z_Free(wavData);
 	mmStreamClose();
 	soundDisable();
+	digmusic_started = 0;
 }
 
 boolean I_StartDigSong(const char *musicname, INT32 looping)
@@ -262,10 +264,12 @@ boolean I_StartDigSong(const char *musicname, INT32 looping)
 	lumpnum_t lumpnum;
 	size_t lumplength;
 	
-	snprintf(filename, sizeof filename, "o_%s\n", musicname);
+	snprintf(filename, sizeof filename, "o_%s", musicname);
 	strupr(filename);
-	if (W_CheckNumForName(filename) == LUMPERROR)
+	if (W_CheckNumForName(filename) == LUMPERROR) {
+		CONS_Printf("Couldn't find %s!\n", filename);
 		return false;
+	}
 	
 	wavData = W_CacheLumpName(filename, PU_MUSIC);
 	wavLen = W_LumpLength(W_CheckNumForName(filename));
@@ -296,7 +300,7 @@ void I_StopDigSong(void){
 void I_SetDigMusicVolume(INT32 volume)
 {
 	if (srb2_playsong)
-		mmStreamVolume(volume);
+		mmStreamVolume((int)(127 * ((float)volume/31.0f)));
 }
 
 boolean I_SetSongSpeed(float speed)

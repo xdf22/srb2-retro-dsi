@@ -2865,6 +2865,10 @@ static inline boolean P_NetUnArchiveMisc(void)
 
 void P_SaveGame(void)
 {
+	#if defined(_NDS)
+	if (srb2_debug)
+		return;
+	#endif
 	P_ArchiveMisc();
 	P_ArchivePlayer();
 

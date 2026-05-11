@@ -29,7 +29,7 @@
 #define __D_NET__
 
 // Max computers in a game.
-#define MAXNETNODES 32
+#define MAXNETNODES MAXPLAYERS
 #define BROADCASTADDR MAXNETNODES
 #define MAXSPLITSCREENPLAYERS 2 // max number of players on a single computer
 

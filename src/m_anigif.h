@@ -17,7 +17,7 @@
 #include "command.h"
 #include "screen.h"
 
-#if NUMSCREENS > 2
+#if NUMSCREENS > 2 && !defined(_NDS)
 #define HAVE_ANIGIF
 #endif
 

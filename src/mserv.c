@@ -27,7 +27,7 @@
 #endif
 
 #if (defined (NOMD5) || defined (NOMSERV)) && !defined (NONET)
-#define NONET
+//#define NONET
 #endif
 
 #ifndef NONET
@@ -87,6 +87,18 @@
 
 #ifdef _WIN32_WCE
 #include "sdl/SRB2CE/cehelp.h"
+#endif
+
+#ifdef _NDS
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+
+#include <nds.h>
+#include <dswifi9.h> // xdf is going to kill me <3
 #endif
 
 // ================================ DEFINITIONS ===============================
@@ -202,7 +214,7 @@ static void ServerName_OnChange(void);
 
 #define DEF_PORT "28900"
 consvar_t cv_internetserver = {"internetserver", "No", CV_CALL, CV_YesNo, InternetServer_OnChange, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_masterserver = {"masterserver", "ms.srb2.org:"DEF_PORT, CV_SAVE, NULL, MasterServer_OnChange, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_masterserver = {"masterserver", "ms.srb2classic.net:"DEF_PORT, CV_SAVE, NULL, MasterServer_OnChange, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_servername = {"servername", "SRB2 server", CV_SAVE, NULL, ServerName_OnChange, 0, NULL, NULL, 0, 0, NULL};
 
 INT32 oldroomnum = 0;
@@ -217,7 +229,7 @@ typedef SOCKET SOCKET_TYPE;
 #define BADSOCKET INVALID_SOCKET
 #define ERRSOCKET (SOCKET_ERROR)
 #else
-#if defined (__unix__) || defined (__APPLE__) || defined (__HAIKU__)
+#if defined (__unix__) || defined (__APPLE__) || defined (__HAIKU__) || defined(_NDS)
 typedef int SOCKET_TYPE;
 #else
 typedef unsigned long SOCKET_TYPE;
@@ -236,6 +248,12 @@ static struct sockaddr_in addr;
 static struct timeval select_timeout;
 static fd_set wset;
 static size_t recvfull(SOCKET_TYPE s, char *buf, size_t len, int flags);
+#endif
+
+#ifdef _NDS
+struct addrinfo hint;
+struct addrinfo *result, *rp;
+struct addrinfo *found_rp = NULL;
 #endif
 
 // Room list is an external variable now.
@@ -379,15 +397,33 @@ static inline INT32 GetMSMOTD(void)
 #ifndef NONET
 static INT32 MS_GetIP(const char *hostname)
 {
-	struct hostent *host_ent;
-	if (!inet_aton(hostname, (void *)&addr.sin_addr))
-	{
-		/// \todo only when we are connected to the Internet, or use a non blocking call
-		host_ent = gethostbyname(hostname);
-		if (!host_ent)
-			return MS_GETHOSTBYNAME_ERROR;
-		M_Memcpy(&addr.sin_addr, host_ent->h_addr_list[0], sizeof (struct in_addr));
-	}
+	hint.ai_flags = AI_CANONNAME;
+    hint.ai_family = AF_INET;     // Allow IPv4 and IPv6
+    hint.ai_socktype = SOCK_STREAM; // TCP
+    hint.ai_protocol = 0;
+    hint.ai_addrlen = 0;
+    hint.ai_canonname = NULL;
+    hint.ai_addr = NULL;
+    hint.ai_next = NULL;
+
+    int err = getaddrinfo(hostname, "80", &hint, &result);
+    if (err != 0)
+    {
+        CONS_Printf("getaddrinfo(): %d\n", err);
+        return MS_GETHOSTBYNAME_ERROR;
+    }
+
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        struct sockaddr_in *sinp;
+        const char *addr;
+        char buf[1024];
+
+		sinp = (struct sockaddr_in *)rp->ai_addr;
+		addr = inet_ntop(AF_INET, &sinp->sin_addr, buf, sizeof(buf));
+		found_rp = rp;
+		break;
+    }
 	return 0;
 }
 #endif
@@ -397,6 +433,68 @@ static INT32 MS_GetIP(const char *hostname)
 //
 static INT32 MS_Connect(const char *ip_addr, const char *str_port, INT32 async)
 {
+#ifdef _NDS
+    hint.ai_flags = AI_CANONNAME;
+    hint.ai_family = AF_INET;     // Allow IPv4 and IPv6
+    hint.ai_socktype = SOCK_STREAM; // TCP
+    hint.ai_protocol = 0;
+    hint.ai_addrlen = 0;
+    hint.ai_canonname = NULL;
+    hint.ai_addr = NULL;
+    hint.ai_next = NULL;
+
+    int err = getaddrinfo(ip_addr, str_port, &hint, &result);
+    if (err != 0)
+        return MS_CONNECT_ERROR;
+
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        struct sockaddr_in *sinp;
+        const char *addr;
+        char buf[1024];
+
+		sinp = (struct sockaddr_in *)rp->ai_addr;
+		addr = inet_ntop(AF_INET, &sinp->sin_addr, buf, sizeof(buf));
+		found_rp = rp;
+		break;
+    }
+	
+    if (found_rp == NULL)
+    {
+        freeaddrinfo(result);
+        return MS_CONNECT_ERROR;
+    }
+	
+	socket_fd = socket(found_rp->ai_family, found_rp->ai_socktype, found_rp->ai_protocol);
+	if (socket_fd == BADSOCKET || socket_fd == (SOCKET_TYPE)ERRSOCKET) {
+		return MS_SOCKET_ERROR;
+	}
+
+	if (async) // do asynchronous connection
+	{
+		int res = 1;
+
+		ioctl(socket_fd, FIONBIO, (char *)&res);
+
+		if (connect(socket_fd, found_rp->ai_addr, found_rp->ai_addrlen) == ERRSOCKET)
+		{
+			if (errno != EINPROGRESS)
+			{
+				con_state = MSCS_FAILED;
+				CloseConnection();
+				return MS_CONNECT_ERROR;
+			}
+		}
+		con_state = MSCS_WAITING;
+		FD_ZERO(&wset);
+		FD_SET(socket_fd, &wset);
+		select_timeout.tv_sec = 0, select_timeout.tv_usec = 0;
+	}
+	else if (connect(socket_fd, found_rp->ai_addr, found_rp->ai_addrlen) == ERRSOCKET)
+		return MS_CONNECT_ERROR;
+	return 0;
+#endif
+	
 #ifdef NONET
 	str_port = ip_addr = NULL;
 	async = MS_CONNECT_ERROR;
@@ -571,7 +669,7 @@ const char *GetMODVersion(void)
 	// we must be connected to the master server before writing to it
 	if (MS_Connect(GetMasterServerIP(), GetMasterServerPort(), 0))
 	{
-		CONS_Printf("cannot connect to the master server\n");
+		CONS_Printf("Can't connect to the MS!\n");
 		M_StartMessage("There was a problem connecting to\nthe Master Server", NULL, MM_NOTHING);
 		return NULL;
 	}
@@ -813,16 +911,32 @@ void MSOpenUDPSocket(void)
 		if (msnode < 0)
 		{
 			char hostname[24];
+			
+			#ifdef _NDS
+			struct sockaddr_in *sinp;
+			const char *addr;
+			char buf[1024];
+
+			#endif
 
 			MS_GetIP(GetMasterServerIP());
+
+			#ifdef _NDS
+			sinp = (struct sockaddr_in *)rp->ai_addr;
+			addr = inet_ntop(AF_INET, &sinp->sin_addr, buf, sizeof(buf));
+			#endif
 
 			sprintf(hostname, "%s:%d",
 #ifdef _arch_dreamcast
 				inet_ntoa(*(UINT32 *)&addr.sin_addr),
 #else
+#ifdef _NDS
+				addr,
+#else
 				inet_ntoa(addr.sin_addr),
 #endif
-				atoi(GetMasterServerPort())+1);
+#endif
+				atoi(GetMasterServerPort())+1);			
 			msnode = I_NetMakeNode(hostname);
 		}
 	}
@@ -907,7 +1021,7 @@ void SendAskInfoViaMS(INT32 node, tic_t asktime)
 	// This must be called after calling MSOpenUDPSocket, due to the
 	// static buffer.
 	address = I_GetNodeAddress(node);
-
+	
 	// Copy the IP address into the buffer.
 	inip = mshpp.ip;
 	while(*address && *address != ':') *inip++ = *address++;

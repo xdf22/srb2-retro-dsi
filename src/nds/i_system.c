@@ -165,8 +165,8 @@ void I_GetEvent(void)
 		if (!(keysDown() & KEY_TOUCH)) {
 			event.type = ev_mouse;
 			event.data1 = 0;
-			event.data2 = current_touch_position.px - last_touch_position.px;
-			event.data3 = current_touch_position.py - last_touch_position.py;
+			event.data2 = (current_touch_position.px - last_touch_position.px);
+			event.data3 = -(current_touch_position.py - last_touch_position.py);
 			D_PostEvent(&event);
 		}
 		last_touch_position = current_touch_position;

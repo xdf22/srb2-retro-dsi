@@ -122,12 +122,19 @@ consvar_t cv_precipdensity = {"precipdensity", "Heavy", CV_SAVE, precipdensity_c
 consvar_t cv_soniccd = {"soniccd", "Off", CV_NETVAR, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_allowmlook = {"allowmlook", "Yes", CV_NETVAR, CV_YesNo, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_precipdist = {"precipdist", "1024", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_objectdist = {"objectdist", "1024", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_objectdist = {"objectdist", "256", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_showhud = {"showhud", "Yes", CV_CALL,  CV_YesNo, R_SetViewSize, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_limitdraw = {"limitdraw", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_grtranslucenthud = {"gr_translucenthud", "255", CV_SAVE|CV_CALL, grtranslucenthud_cons_t, R_SetViewSize, 0, NULL, NULL, 0, 0, NULL};
 // Enabling homremoval constitutes a rather sizeable performance hit.
 consvar_t cv_homremoval = {"homremoval", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+
+// optimizations!
+consvar_t cv_mobjopt = {"mobjopt", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_texopt = {"texobj", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_pobjopt = {"pobjopt", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_limiteddraw = {"limiteddraw", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+
 
 void SplitScreen_OnChange(void)
 {
@@ -551,6 +558,15 @@ void R_ExecuteSetViewSize(void)
 
 	if (splitscreen)
 		viewheight >>= 1;
+	
+	#ifdef _NDS
+	if (cv_screendiv.value) {
+		scaledviewwidth >>= cv_screendiv.value;
+		scaledviewwidth += vid.width/((cv_screendiv.value+1) * 2);
+		viewheight >>= cv_screendiv.value;
+		viewheight += vid.height/((cv_screendiv.value+1) * 2);
+	}
+	#endif
 
 	viewwidth = scaledviewwidth;
 
@@ -580,7 +596,7 @@ void R_ExecuteSetViewSize(void)
 	R_SetSkyScale();
 
 	// planes
-	aspectx = (((vid.height*centerx*BASEVIDWIDTH)/BASEVIDHEIGHT)/vid.width);
+	aspectx = (((viewheight*centerx*BASEVIDWIDTH)/BASEVIDHEIGHT)/viewwidth);
 
 	if (rendermode == render_soft)
 	{
@@ -931,6 +947,10 @@ void R_RegisterEngineStuff(void)
 	if (dedicated)
 		return;
 
+	CV_RegisterVar(&cv_mobjopt);
+	CV_RegisterVar(&cv_texopt);
+	CV_RegisterVar(&cv_pobjopt);
+	CV_RegisterVar(&cv_limiteddraw);
 	CV_RegisterVar(&cv_objectdist);
 	CV_RegisterVar(&cv_precipdist);
 	CV_RegisterVar(&cv_chasecam);

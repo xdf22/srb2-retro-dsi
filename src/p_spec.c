@@ -246,6 +246,9 @@ void P_InitPicAnims(void)
 	else
 		animdefs = harddefs;
 
+	if (cv_texopt.value && !netgame)
+		return;
+
 	for (i = 0; animdefs[i].istexture != -1; i++, maxanims++);
 
 	if (anims)
@@ -346,6 +349,9 @@ static inline void P_FindAnimatedFlat(INT32 animnum)
 void P_SetupLevelFlatAnims(void)
 {
 	INT32 i;
+
+	if (cv_texopt.value && !netgame)
+		return;
 
 	// the original game flat anim sequences
 	for (i = 0; anims[i].istexture != -1; i++)
@@ -4279,6 +4285,10 @@ void P_UpdateSpecials(void)
 	/// \todo do not check the non-animate flat.. link the animated ones?
 	/// \note its faster than the original anywaysince it animates only
 	///    flats used in the level, and there's usually very few of them
+	
+	if (cv_texopt.value && !netgame)
+		return;
+	
 	foundflats = levelflats;
 	for (j = 0; j < numlevelflats; j++, foundflats++)
 	{

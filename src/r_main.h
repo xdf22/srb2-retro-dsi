@@ -97,6 +97,7 @@ extern consvar_t cv_objectdist;
 extern consvar_t cv_precipdensity, cv_precipdist;
 extern consvar_t cv_tailspickup;
 extern consvar_t cv_shadowoffs;
+extern consvar_t cv_mobjopt, cv_texopt, cv_pobjopt, cv_limiteddraw;
 
 // Called by startup code.
 void R_Init(void);

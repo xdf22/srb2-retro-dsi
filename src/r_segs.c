@@ -171,7 +171,7 @@ static void R_DrawWallSplats(void)
 				colfunc = basecolfunc;
 				break;
 			case SPLATDRAWMODE_TRANS:
-				if (!cv_translucency.value)
+				if (!cv_translucency.value || cv_texopt.value)
 					colfunc = basecolfunc;
 				else
 				{
@@ -349,6 +349,9 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 		dc_transmap = ((curline->polyseg->translucency)<<FF_TRANSSHIFT) - 0x10000 + transtables;
 		colfunc = fuzzcolfunc;
 	}
+	
+	if (colfunc == fuzzcolfunc && cv_texopt.value)
+		colfunc = wallcolfunc;
 
 	rw_scalestep = ds->scalestep;
 	spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
@@ -1165,7 +1168,7 @@ static void R_RenderSegLoop (void)
 	angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
 	texturecolumn = rw_offset-FixedMul(FINETANGENT(angle),rw_distance);
 	texturecolumn >>= FRACBITS;
-
+	
 	// texturecolumn and lighting are independent of wall tiers
 	if (segtextured)
 	{
@@ -1460,6 +1463,18 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		}
 #endif
 		ds_p->scale2 = ds_p->scale1;
+	}
+	
+	if (cv_limiteddraw.value)
+	{
+		fixed_t dist, dx, dy;
+		angle_t an;
+		dx = (curline->v1->x+curline->v2->x)/2;
+		dy = (curline->v1->y+curline->v2->y)/2;
+		dist = R_PointToDist(dx, dy);
+		an = R_PointToAngle2(camera.x, camera.y, dx, dy) - camera.angle;
+		if ((an > ANGLE_45 && an < ANGLE_315)/* || dist > 2048*FRACUNIT*/)
+			return;
 	}
 
 	// calculate texture boundaries
@@ -2151,6 +2166,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			markfloor = 0;
 	}
 
+	uint32_t validfloorplanes = 0;
 	ds_p->numffloorplanes = 0;
 	if (numffloors)
 	{
@@ -2162,6 +2178,8 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			{
 				ds_p->ffloorplanes[i] = ffloor[i].plane =
 					R_CheckPlane(ffloor[i].plane, rw_x, rw_stopx - 1);
+				if (ds_p->ffloorplanes[i])
+					validfloorplanes++;
 			}
 
 			firstseg = ds_p;
@@ -2170,8 +2188,14 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		{
 			for (i = 0; i < numffloors; i++)
 				R_ExpandPlane(ffloor[i].plane, rw_x, rw_stopx - 1);
-		}
+		
+			if (ffloor[i].plane)
+				validfloorplanes++;
+		}	
 	}
+	
+	if (!(floorplane||ceilingplane||validfloorplanes))
+		return;
 
 #ifdef WALLSPLATS
 	if (linedef->splats && cv_splats.value)

@@ -598,7 +598,7 @@ static void SOCK_Send(void)
 		(struct sockaddr *)&clientaddress[doomcom->remotenode], d);
 
 	if (c == ERRSOCKET && errno != ECONNREFUSED && errno != EWOULDBLOCK)
-		I_Error("SOCK_Send, error sending to node %d (%s) #%u: %s", doomcom->remotenode,
+		CONS_Printf("SOCK_Send, error sending to node %d (%s) #%u: %s", doomcom->remotenode,
 			SOCK_GetNodeAddress(doomcom->remotenode), errno, strerror(errno));
 }
 #endif

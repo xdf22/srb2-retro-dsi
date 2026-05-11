@@ -240,7 +240,7 @@ void R_MapPlane(INT32 y, INT32 x1, INT32 x2)
 
 #ifdef RANGECHECK
 	if (x2 < x1 || x1 < 0 || x2 >= viewwidth || y > viewheight)
-		I_Error("R_MapPlane: %d, %d at %d", x1, x2, y);
+		return;
 #endif
 
 	// from r_splats's R_RenderFloorSplat
@@ -695,6 +695,9 @@ void R_DrawSinglePlane(visplane_t *pl)
 				ds_transmap = ((tr_trans10)<<FF_TRANSSHIFT) - 0x10000 + transtables;
 			else // Opaque, but allow transparent flat pixels
 				spanfunc = splatfunc;
+				
+			if (cv_texopt.value)
+				spanfunc = splatfunc;
 
 			if (pl->extra_colormap && pl->extra_colormap->fog)
 				light = (pl->lightlevel >> LIGHTSEGSHIFT);
@@ -843,7 +846,7 @@ a 'smoothing' of the texture while
 using the palette colors.
 */
 #ifdef QUINCUNX
-	if (spanfunc == R_DrawSpan_8)
+	if (spanfunc == R_DrawSpan_8 && !cv_texopt.value)
 	{
 		INT32 i;
 		ds_transmap = ((tr_trans50)<<FF_TRANSSHIFT) - 0x10000 + transtables;

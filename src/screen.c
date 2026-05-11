@@ -70,6 +70,8 @@ consvar_t cv_scr_height = {"scr_height", "200", CV_SAVE, CV_Unsigned, NULL, 0, N
 #else
 consvar_t cv_scr_width = {"scr_width", "256", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_scr_height = {"scr_height", "192", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
+static CV_PossibleValue_t cons_screendiv_t[] = {{0, "None"}, {1, "Light"}, {2, "Moderate"}, {3, "Strong"}, {0, NULL}};
+consvar_t cv_screendiv = {"nds_screendiv", "None", CV_SAVE|CV_CALL, cons_screendiv_t, R_ExecuteSetViewSize, 0, NULL, NULL, 0, 0, NULL};
 #endif
 consvar_t cv_scr_depth = {"scr_depth", "8 bits", CV_SAVE, scr_depth_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_renderview = {"renderview", "On", 0, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
@@ -260,6 +262,9 @@ void SCR_Startup(void)
 
 	V_Init();
 	CV_RegisterVar(&cv_ticrate);
+	#ifdef _NDS
+	CV_RegisterVar(&cv_screendiv);
+	#endif
 
 	V_SetPalette(0);
 }

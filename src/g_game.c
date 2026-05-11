@@ -2082,7 +2082,7 @@ void G_CoopSpawnPlayer(INT32 playernum, boolean starpost)
 					goto startdeath;
 				}
 
-				for (j = 0; j < 32; j++)
+				for (j = 0; j < MAXPLAYERS; j++)
 				{
 					i = P_Random() % numredctfstarts;
 					if (G_CheckSpot(playernum, redctfstarts[i]))
@@ -2099,7 +2099,7 @@ void G_CoopSpawnPlayer(INT32 playernum, boolean starpost)
 					goto startdeath;
 				}
 
-				for (j = 0; j < 32; j++)
+				for (j = 0; j < MAXPLAYERS; j++)
 				{
 					i = P_Random() % numbluectfstarts;
 					if (G_CheckSpot(playernum, bluectfstarts[i]))
@@ -3205,7 +3205,7 @@ void G_DoPlayDemo(char *defdemoname)
 
 	multiplayer = READUINT8(demo_p);
 
-	for (i = 0; i < 32; i++)
+	for (i = 0; i < MAXPLAYERS; i++)
 		playeringame[i] = READUINT8(demo_p);
 
 #if MAXPLAYERS > 32

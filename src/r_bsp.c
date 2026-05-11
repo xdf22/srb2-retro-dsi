@@ -65,8 +65,7 @@ static cliprange_t solidsegs[MAXSEGS];
 //
 static void R_ClipSolidWallSegment(INT32 first, INT32 last)
 {
-	cliprange_t *next;
-	cliprange_t *start;
+	cliprange_t *next, *start;
 
 	// Find the first range that touches the range (adjacent pixels are touching).
 	start = solidsegs;
@@ -426,9 +425,9 @@ static void R_AddLine(seg_t *line)
 	// Does not cross a pixel?
 	if (x1 >= x2)       // killough 1/31/98 -- change == to >= for robustness
 		return;
-
+		
 	backsector = line->backsector;
-
+		
 	// Single sided line?
 	if (!backsector)
 		goto clipsolid;

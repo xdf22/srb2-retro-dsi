@@ -4832,7 +4832,7 @@ static boolean P_AddShield(mobj_t *thing)
 // AI for the Koopa boss.
 static void P_KoopaThinker(mobj_t *koopa)
 {
-	if (koopa->type != MT_PLAYER && !netgame) {
+	if (koopa->type != MT_PLAYER && !netgame && cv_mobjopt.value) {
 		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
 		
 		adx = abs(players[displayplayer].mo->x - koopa->x);
@@ -4919,7 +4919,7 @@ void P_MobjThinker(mobj_t *mobj)
 	if (mobj->flags & MF_NOTHINK)
 		return;
 	
-	if (mobj->type != MT_PLAYER && !netgame) {
+	if (mobj->type != MT_PLAYER && !netgame && cv_mobjopt.value && cv_mobjopt.value) {
 		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
 
 		adx = abs(players[displayplayer].mo->x - mobj->x);
@@ -6233,7 +6233,7 @@ void P_MobjThinker(mobj_t *mobj)
 // Quick, optimized function for the Rail Rings
 void P_RailThinker(mobj_t *mobj)
 {
-	if (mobj->type != MT_PLAYER && !netgame) {
+	if (mobj->type != MT_PLAYER && !netgame && cv_mobjopt.value) {
 		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
 		
 		adx = abs(players[displayplayer].mo->x - mobj->x);
@@ -6282,7 +6282,7 @@ void P_RailThinker(mobj_t *mobj)
 // Unquick, unoptimized function for pushables
 void P_PushableThinker(mobj_t *mobj)
 {
-	if (mobj->type != MT_PLAYER && !netgame) {
+	if (mobj->type != MT_PLAYER && !netgame && cv_mobjopt.value) {
 		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
 		
 		adx = abs(players[displayplayer].mo->x - mobj->x);
@@ -6372,7 +6372,7 @@ void P_PushableThinker(mobj_t *mobj)
 // Quick, optimized function for scenery
 void P_SceneryThinker(mobj_t *mobj)
 {
-	if (mobj->type != MT_PLAYER && !netgame) {
+	if (mobj->type != MT_PLAYER && !netgame && cv_mobjopt.value) {
 		fixed_t adx, ady, adx2, ady2, approx_dist, approx_dist2;
 		
 		adx = abs(players[displayplayer].mo->x - mobj->x);

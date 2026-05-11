@@ -138,8 +138,8 @@ extern FILE *logstream;
 // The maximum number of players, multiplayer/networking.
 // NOTE: it needs more than this to increase the number of players...
 
-#define MAXPLAYERS 32
-#define MAXSKINS MAXPLAYERS
+#define MAXPLAYERS 4
+#define MAXSKINS 16
 #define PLAYERSMASK (MAXPLAYERS-1)
 #define MAXPLAYERNAME 21
 #define MAXSKINCOLORS 16

@@ -1010,29 +1010,6 @@ static void R_ProjectSprite(mobj_t *thing)
 	fixed_t gz, gzt;
 	INT32 heightsec;
 	INT32 light = 0;
-	
-	if ((thing->flags2 & MF2_DONTDRAW)==0)
-	{
-		adx = abs(players[displayplayer].mo->x - thing->x);
-		ady = abs(players[displayplayer].mo->y - thing->y);
-
-		// From _GG1_ p.428. Approx. eucledian distance fast.
-		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
-
-		if (approx_dist >= (cv_objectdist.value << FRACBITS))
-			return;
-		else if (splitscreen && players[secondarydisplayplayer].mo)
-		{
-			adx = abs(players[secondarydisplayplayer].mo->x - thing->x);
-			ady = abs(players[secondarydisplayplayer].mo->y - thing->y);
-
-			// From _GG1_ p.428. Approx. eucledian distance fast.
-			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
-
-			if (approx_dist >= (cv_objectdist.value << FRACBITS))
-				return;
-		}
-	}
 
 	// transform the origin point
 	tr_x = thing->x - viewx;
@@ -1131,10 +1108,12 @@ static void R_ProjectSprite(mobj_t *thing)
 		flip = sprframe->flip[0];
 	}
 	
-	angle_t an = R_PointToAngle2(camera.x, camera.y, thing->x, thing->y) - camera.angle;
+	if (cv_mobjopt.value) {
+		angle_t an = R_PointToAngle2(camera.x, camera.y, thing->x, thing->y) - camera.angle;
 
-	if (an > ANGLE_45 && an < ANGLE_315)
-		return; // behind back
+		if (an > ANGLE_90 && an < ANGLE_270)
+			return; // behind back
+	}
 
 	I_Assert(lump < MAXSPRITELUMPS);
 
@@ -1586,7 +1565,8 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
 
 			if (approx_dist < (cv_objectdist.value << FRACBITS))
-				R_ProjectSprite(thing);
+				if (P_CheckSight(players[displayplayer].mo, thing))
+					R_ProjectSprite(thing);
 			else if (splitscreen && players[secondarydisplayplayer].mo)
 			{
 				adx = abs(players[secondarydisplayplayer].mo->x - thing->x);
@@ -1596,7 +1576,8 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 				approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
 
 				if (approx_dist < (cv_objectdist.value << FRACBITS))
-					R_ProjectSprite (thing);
+					if (P_CheckSight(players[secondarydisplayplayer].mo, thing))
+						R_ProjectSprite (thing);
 			}
 		}
 

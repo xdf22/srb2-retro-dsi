@@ -845,7 +845,7 @@ void CL_UpdateServerList(boolean internetsearch, INT32 room)
 				// Make sure MS version matches our own, to
 				// thwart nefarious servers who lie to the MS.
 
-				if(strcmp(version, server_list[i].version) == 0)
+				//if(strcmp(version, server_list[i].version) == 0 || true)
 				{
 					INT32 node;
 					XBOXSTATIC char addr_str[24];
