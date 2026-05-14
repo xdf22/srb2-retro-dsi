@@ -27,7 +27,7 @@
 #endif
 
 #if (defined (NOMD5) || defined (NOMSERV)) && !defined (NONET)
-//#define NONET
+#define NONET
 #endif
 
 #ifndef NONET
@@ -87,18 +87,6 @@
 
 #ifdef _WIN32_WCE
 #include "sdl/SRB2CE/cehelp.h"
-#endif
-
-#ifdef _NDS
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
-#include <nds.h>
-#include <dswifi9.h> // xdf is going to kill me <3
 #endif
 
 // ================================ DEFINITIONS ===============================
@@ -248,12 +236,6 @@ static struct sockaddr_in addr;
 static struct timeval select_timeout;
 static fd_set wset;
 static size_t recvfull(SOCKET_TYPE s, char *buf, size_t len, int flags);
-#endif
-
-#ifdef _NDS
-struct addrinfo hint;
-struct addrinfo *result, *rp;
-struct addrinfo *found_rp = NULL;
 #endif
 
 // Room list is an external variable now.
@@ -432,69 +414,7 @@ static INT32 MS_GetIP(const char *hostname)
 // MS_Connect()
 //
 static INT32 MS_Connect(const char *ip_addr, const char *str_port, INT32 async)
-{
-#ifdef _NDS
-    hint.ai_flags = AI_CANONNAME;
-    hint.ai_family = AF_INET;     // Allow IPv4 and IPv6
-    hint.ai_socktype = SOCK_STREAM; // TCP
-    hint.ai_protocol = 0;
-    hint.ai_addrlen = 0;
-    hint.ai_canonname = NULL;
-    hint.ai_addr = NULL;
-    hint.ai_next = NULL;
-
-    int err = getaddrinfo(ip_addr, str_port, &hint, &result);
-    if (err != 0)
-        return MS_CONNECT_ERROR;
-
-    for (rp = result; rp != NULL; rp = rp->ai_next)
-    {
-        struct sockaddr_in *sinp;
-        const char *addr;
-        char buf[1024];
-
-		sinp = (struct sockaddr_in *)rp->ai_addr;
-		addr = inet_ntop(AF_INET, &sinp->sin_addr, buf, sizeof(buf));
-		found_rp = rp;
-		break;
-    }
-	
-    if (found_rp == NULL)
-    {
-        freeaddrinfo(result);
-        return MS_CONNECT_ERROR;
-    }
-	
-	socket_fd = socket(found_rp->ai_family, found_rp->ai_socktype, found_rp->ai_protocol);
-	if (socket_fd == BADSOCKET || socket_fd == (SOCKET_TYPE)ERRSOCKET) {
-		return MS_SOCKET_ERROR;
-	}
-
-	if (async) // do asynchronous connection
-	{
-		int res = 1;
-
-		ioctl(socket_fd, FIONBIO, (char *)&res);
-
-		if (connect(socket_fd, found_rp->ai_addr, found_rp->ai_addrlen) == ERRSOCKET)
-		{
-			if (errno != EINPROGRESS)
-			{
-				con_state = MSCS_FAILED;
-				CloseConnection();
-				return MS_CONNECT_ERROR;
-			}
-		}
-		con_state = MSCS_WAITING;
-		FD_ZERO(&wset);
-		FD_SET(socket_fd, &wset);
-		select_timeout.tv_sec = 0, select_timeout.tv_usec = 0;
-	}
-	else if (connect(socket_fd, found_rp->ai_addr, found_rp->ai_addrlen) == ERRSOCKET)
-		return MS_CONNECT_ERROR;
-	return 0;
-#endif
-	
+{	
 #ifdef NONET
 	str_port = ip_addr = NULL;
 	async = MS_CONNECT_ERROR;

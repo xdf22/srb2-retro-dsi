@@ -32,9 +32,7 @@
 
 #include "doomdef.h"
 
-#if defined (NOMD5) && !defined (NONET)
-//#define NONET
-#endif
+#define NONET
 
 #if !defined (NONET) && !defined (NOIPX)
 #define USEIPX //Alam: Remline to turn off IPX support

@@ -108,6 +108,8 @@ extracolormap_t extra_colormaps[MAXCOLORMAPS];
 
 static CV_PossibleValue_t precipdensity_cons_t[] = {{1, "Thick"}, {2, "Heavy"}, {3, "Moderate"}, {4, "Light"}, {0, NULL}};
 static CV_PossibleValue_t grtranslucenthud_cons_t[] = {{1, "MIN"}, {255, "MAX"}, {0, NULL}};
+static CV_PossibleValue_t objdist_cons_t[] = {{768, "Near"}, {1536, "Far"}, {0, NULL}};
+
 
 static void ChaseCam_OnChange(void);
 static void ChaseCam2_OnChange(void);
@@ -121,8 +123,8 @@ consvar_t cv_shadowoffs = {"offsetshadows", "Off", CV_SAVE, CV_OnOff, NULL, 0, N
 consvar_t cv_precipdensity = {"precipdensity", "Heavy", CV_SAVE, precipdensity_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_soniccd = {"soniccd", "Off", CV_NETVAR, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_allowmlook = {"allowmlook", "Yes", CV_NETVAR, CV_YesNo, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_precipdist = {"precipdist", "512", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_objectdist = {"objectdist", "1536", CV_SAVE, CV_Unsigned, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_precipdist = {"precipdist", "Near", CV_SAVE, objdist_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_objectdist = {"objectdist", "Near", CV_SAVE, objdist_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_showhud = {"showhud", "Yes", CV_CALL,  CV_YesNo, R_SetViewSize, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_limitdraw = {"limitdraw", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_grtranslucenthud = {"gr_translucenthud", "255", CV_SAVE|CV_CALL, grtranslucenthud_cons_t, R_SetViewSize, 0, NULL, NULL, 0, 0, NULL};
@@ -130,11 +132,13 @@ consvar_t cv_grtranslucenthud = {"gr_translucenthud", "255", CV_SAVE|CV_CALL, gr
 consvar_t cv_homremoval = {"homremoval", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 
 // optimizations!
-consvar_t cv_mobjopt = {"mobjopt", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_texopt = {"texobj", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
-consvar_t cv_pobjopt = {"pobjopt", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_mobjopt = {"mobjopt", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_texopt = {"texobj", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_pobjopt = {"pobjopt", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_spropt = {"spropt", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_disablelights = {"disablelights", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_limiteddraw = {"limiteddraw", "Off", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
-
+consvar_t cv_noscenery = {"noscenery", "No", CV_SAVE, CV_YesNo, NULL, 0, NULL, NULL, 0, 0, NULL};
 
 void SplitScreen_OnChange(void)
 {
@@ -950,7 +954,12 @@ void R_RegisterEngineStuff(void)
 	CV_RegisterVar(&cv_mobjopt);
 	CV_RegisterVar(&cv_texopt);
 	CV_RegisterVar(&cv_pobjopt);
+	CV_RegisterVar(&cv_spropt);
+	CV_RegisterVar(&cv_disablelights);
 	CV_RegisterVar(&cv_limiteddraw);
+	CV_RegisterVar(&cv_noscenery);
+	CV_RegisterVar(&cv_dsikeyboard);
+	CV_RegisterVar(&cv_dsiconsole);
 	CV_RegisterVar(&cv_objectdist);
 	CV_RegisterVar(&cv_precipdist);
 	CV_RegisterVar(&cv_chasecam);

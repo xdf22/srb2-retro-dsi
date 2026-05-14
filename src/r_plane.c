@@ -710,6 +710,9 @@ void R_DrawSinglePlane(visplane_t *pl)
 			light = (pl->lightlevel >> LIGHTSEGSHIFT);
 		}
 		else light = (pl->lightlevel >> LIGHTSEGSHIFT);
+		
+		if (cv_disablelights.value)
+			light = LIGHTLEVELS-1;
 
 #ifndef NOWATER
 		if (pl->ffloor->flags & FF_RIPPLE)
@@ -807,7 +810,7 @@ void R_DrawSinglePlane(visplane_t *pl)
 	yoffs = pl->yoffs;
 	planeheight = abs(pl->height - pl->viewz);
 
-	if (light >= LIGHTLEVELS)
+	if (light >= LIGHTLEVELS || cv_disablelights.value)
 		light = LIGHTLEVELS-1;
 
 	if (light < 0)
@@ -877,7 +880,7 @@ using the palette colors.
 			}
 			planeheight = abs(pl->height - pl->viewz);
 
-			if (light >= LIGHTLEVELS)
+			if (light >= LIGHTLEVELS || cv_disablelights.value)
 				light = LIGHTLEVELS-1;
 
 			if (light < 0)

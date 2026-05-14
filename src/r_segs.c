@@ -191,7 +191,7 @@ static void R_DrawWallSplats(void)
 		for (dc_x = x1; dc_x <= x2; dc_x++, spryscale += rw_scalestep)
 		{
 			pindex = spryscale>>LIGHTSCALESHIFT;
-			if (pindex >= MAXLIGHTSCALE)
+			if (pindex >= MAXLIGHTSCALE || cv_disablelights.value)
 				pindex = MAXLIGHTSCALE - 1;
 			dc_colormap = walllights[pindex];
 
@@ -393,6 +393,9 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 				lightnum = LIGHTLEVELS - 1;
 			else
 				lightnum = (rlight->lightlevel >> LIGHTSEGSHIFT);
+			
+			if (cv_disablelights.value)
+				lightnum = LIGHTLEVELS - 1;
 
 			if (rlight->extra_colormap && rlight->extra_colormap->fog)
 				;
@@ -423,10 +426,13 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 			lightnum--;
 		else if (curline->v1->x == curline->v2->x)
 			lightnum++;
+		
+		if (cv_disablelights.value)
+			lightnum = LIGHTLEVELS - 1;
 
 		if (lightnum < 0)
 			walllights = scalelight[0];
-		else if (lightnum >= LIGHTLEVELS)
+		else if (lightnum >= LIGHTLEVELS || cv_disablelights.value)
 			walllights = scalelight[LIGHTLEVELS - 1];
 		else
 			walllights = scalelight[lightnum];
@@ -532,7 +538,7 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 
 						pindex = spryscale>>LIGHTSCALESHIFT;
 
-						if (pindex >= MAXLIGHTSCALE)
+						if (pindex >= MAXLIGHTSCALE || cv_disablelights.value)
 							pindex = MAXLIGHTSCALE - 1;
 
 						if (rlight->extra_colormap)
@@ -577,7 +583,7 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 				// calculate lighting
 				pindex = spryscale>>LIGHTSCALESHIFT;
 
-				if (pindex >= MAXLIGHTSCALE)
+				if (pindex >= MAXLIGHTSCALE || cv_disablelights.value)
 					pindex = MAXLIGHTSCALE - 1;
 
 				dc_colormap = walllights[pindex];
@@ -726,6 +732,9 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 	}
 	else if (pfloor->flags & FF_FOG)
 		colfunc = R_DrawFogColumn_8;
+	
+	if (colfunc == fuzzcolfunc && cv_texopt.value)
+		colfunc = wallcolfunc;
 
 	//SoM: Moved these up here so they are available for my lightlist calculations
 	rw_scalestep = ds->scalestep;
@@ -750,7 +759,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 				continue;
 
 			if (light->height > *pfloor->topheight && i+1 < dc_numlights && frontsector->lightlist[i+1].height > *pfloor->topheight)
-					continue;
+				continue;
 
 			lheight = light->height;// > *pfloor->topheight ? *pfloor->topheight + FRACUNIT : light->height;
 			rlight->heightstep = -FixedMul (rw_scalestep, (lheight - viewz));
@@ -779,6 +788,9 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 				rlight->lightnum--;
 			else if (curline->v1->x == curline->v2->x)
 				rlight->lightnum++;
+			
+			if (cv_disablelights.value)
+				rlight->lightnum = LIGHTLEVELS - 1;
 
 			p++;
 		}
@@ -803,10 +815,13 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 		lightnum--;
 		else if (curline->v1->x == curline->v2->x)
 			lightnum++;
+		
+		if (cv_disablelights.value)
+			lightnum = LIGHTLEVELS - 1;
 
 		if (lightnum < 0)
 			walllights = scalelight[0];
-		else if (lightnum >= LIGHTLEVELS)
+		else if (lightnum >= LIGHTLEVELS || cv_disablelights.value)
 			walllights = scalelight[LIGHTLEVELS-1];
 		else
 			walllights = scalelight[lightnum];
@@ -900,7 +915,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 
 						pindex = spryscale>>LIGHTSCALESHIFT;
 
-						if (pindex >=  MAXLIGHTSCALE)
+						if (pindex >=  MAXLIGHTSCALE || cv_disablelights.value)
 							pindex = MAXLIGHTSCALE-1;
 
 						if (pfloor->flags & FF_FOG)
@@ -988,7 +1003,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 			// calculate lighting
 			pindex = spryscale>>LIGHTSCALESHIFT;
 
-			if (pindex >= MAXLIGHTSCALE)
+			if (pindex >= MAXLIGHTSCALE || cv_disablelights.value)
 				pindex = MAXLIGHTSCALE - 1;
 
 			dc_colormap = walllights[pindex];
@@ -1175,7 +1190,7 @@ static void R_RenderSegLoop (void)
 		// calculate lighting
 		pindex = rw_scale>>LIGHTSCALESHIFT;
 
-		if (pindex >=  MAXLIGHTSCALE)
+		if (pindex >=  MAXLIGHTSCALE || cv_disablelights.value)
 			pindex = MAXLIGHTSCALE-1;
 
 		dc_colormap = walllights[pindex];
@@ -1210,7 +1225,7 @@ static void R_RenderSegLoop (void)
 
 			pindex = rw_scale>>LIGHTSCALESHIFT;
 
-			if (pindex >=  MAXLIGHTSCALE)
+			if (pindex >=  MAXLIGHTSCALE || cv_disablelights.value)
 				pindex = MAXLIGHTSCALE-1;
 
 			if (dc_lightlist[i].extra_colormap)

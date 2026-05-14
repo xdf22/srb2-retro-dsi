@@ -136,6 +136,7 @@ void R_DrawWallColumn_8(void)
 
 	// Determine scaling, which is the only mapping to be done.
 	fracstep = dc_iscale;
+
 	//frac = dc_texturemid + (dc_yl - centery)*fracstep;
 	frac = (dc_texturemid + FixedMul((dc_yl << FRACBITS) - centeryfrac, fracstep))*(!dc_hires);
 
@@ -214,6 +215,7 @@ void R_Draw2sMultiPatchColumn_8(void)
 
 	// Determine scaling, which is the only mapping to be done.
 	fracstep = dc_iscale;
+
 	//frac = dc_texturemid + (dc_yl - centery)*fracstep;
 	frac = (dc_texturemid + FixedMul((dc_yl << FRACBITS) - centeryfrac, fracstep))*(!dc_hires);
 

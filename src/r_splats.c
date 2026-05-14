@@ -500,7 +500,7 @@ static void R_RenderFloorSplat(floorsplat_t *pSplat, vertex_t *verts, UINT8 *pTe
 		ds_yfrac += offsety;
 
 		indexr = distance >> LIGHTZSHIFT;
-		if (indexr >= MAXLIGHTZ)
+		if (indexr >= MAXLIGHTZ || cv_disablelights.value)
 			indexr = MAXLIGHTZ - 1;
 		ds_colormap = planezlight[indexr];
 

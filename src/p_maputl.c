@@ -19,6 +19,9 @@
 ///
 ///	Blockmap iterator functions, and some PIT_* functions to use for iteration
 
+#include "d_player.h"
+#include "g_game.h"
+#include "doomdef.h"
 #include "p_local.h"
 #include "r_main.h"
 #include "p_maputl.h"
@@ -784,6 +787,34 @@ boolean P_BlockLinesIterator(INT32 x, INT32 y, boolean (*func)(line_t *))
 	while (plink)
 	{
 		polyobj_t *po = plink->po;
+		
+		if (cv_pobjopt.value && !netgame)
+	{
+		fixed_t adx, ady, approx_dist;
+		
+		adx = abs(players[displayplayer].mo->x - po->centerPt.x);
+		ady = abs(players[displayplayer].mo->y - po->centerPt.y);
+
+		// From _GG1_ p.428. Approx. eucledian distance fast.
+		approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+		if (approx_dist >= (cv_objectdist.value << FRACBITS)) {
+			plink = (polymaplink_t *)(plink->link.next);
+			continue;
+		} else if (splitscreen && players[secondarydisplayplayer].mo)
+		{
+			adx = abs(players[secondarydisplayplayer].mo->x - po->centerPt.x);
+			ady = abs(players[secondarydisplayplayer].mo->y - po->centerPt.y);
+
+			// From _GG1_ p.428. Approx. eucledian distance fast.
+			approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+
+			if (approx_dist >= (cv_objectdist.value << FRACBITS)) {
+				plink = (polymaplink_t *)(plink->link.next);
+				continue;
+			}
+		}
+	}
 
 		if (po->validcount != validcount) // if polyobj hasn't been checked
 		{

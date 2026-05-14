@@ -108,7 +108,7 @@ typedef struct polyobj_s
 	fixed_t blockbox[4]; // bounding box for clipping
 	UINT8 linked;         // is linked to blockmap
 	size_t validcount;   // for clipping: prevents multiple checks
-	INT32 damage;        // damage to inflict on stuck things
+	UINT8 damage;        // damage to inflict on stuck things
 	fixed_t thrust;      // amount of thrust to put on blocking objects
 	INT32 flags;         // Flags for this polyobject
 

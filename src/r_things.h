@@ -27,7 +27,7 @@
 // Fab: this is a hack : should allocate the lookup tables per sprite
 #define	MAXSPRITELUMPS 8192 // Increase maxspritelumps Graue 11-06-2003
 
-#define MAXVISSPRITES 2048 // added 2-2-98 was 128
+#define MAXVISSPRITES 1024 // added 2-2-98 was 128
 
 // Constant arrays used for psprite clipping
 //  and initializing clipping.

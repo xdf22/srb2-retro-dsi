@@ -409,7 +409,7 @@ typedef struct
 #pragma pack()
 #endif
 
-#define MAXSERVERLIST 64 // depends only on the display
+#define MAXSERVERLIST 12 // depends only on the display
 typedef struct
 {
 	SINT8 node;

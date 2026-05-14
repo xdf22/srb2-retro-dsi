@@ -180,7 +180,7 @@ static UINT8 *R_GenerateTexture(size_t texnum)
 	texture_t *texture;
 	texpatch_t *patch;
 	patch_t *realpatch;
-	int x, x1, x2, i;
+	INT32 x, x1, x2, i;
 	size_t blocksize;
 	column_t *patchcol;
 	UINT32 *colofs;
@@ -205,6 +205,7 @@ static UINT8 *R_GenerateTexture(size_t texnum)
 		colofs = (UINT32 *)(void *)(block + 8);
 		texturecolumnofs[texnum] = colofs;
 		blocktex = block;
+
 		for (i = 0; i < texture->width; i++)
 			colofs[i] = LONG(LONG(colofs[i]) + 3);
 		goto done;
@@ -621,7 +622,7 @@ INT32 R_ColormapNumForName(char *name)
 static double deltas[256][3], map[256][3];
 
 static UINT8 NearestColor(UINT8 r, UINT8 g, UINT8 b);
-static int RoundUp(double number);
+static UINT8 RoundUp(double number);
 
 INT32 R_CreateColormap(char *p1, char *p2, char *p3)
 {
@@ -963,17 +964,17 @@ static UINT8 NearestColor(UINT8 r, UINT8 g, UINT8 b)
 }
 
 // Rounds off floating numbers and checks for 0 - 255 bounds
-static int RoundUp(double number)
+static UINT8 RoundUp(double number)
 {
 	if (number > 255.0l)
 		return 255;
 	if (number < 0.0l)
 		return 0;
 
-	if ((int)number <= (int)(number - 0.5f))
-		return (int)number + 1;
+	if ((UINT8)number <= (UINT8)(number - 0.5f))
+		return (UINT8)number + 1;
 
-	return (int)number;
+	return (UINT8)number;
 }
 
 const char *R_ColormapNameForNum(INT32 num)

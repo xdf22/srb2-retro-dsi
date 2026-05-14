@@ -456,7 +456,7 @@ static inline void P_LoadSubsectors(lumpnum_t lumpnum)
 //
 // levelflats
 //
-#define MAXLEVELFLATS 256
+#define MAXLEVELFLATS 128
 
 size_t numlevelflats;
 levelflat_t *levelflats;
@@ -508,7 +508,7 @@ INT32 P_AddLevelFlat(const char *flatname, levelflat_t *levelflat)
 		numlevelflats++;
 
 		if (numlevelflats >= MAXLEVELFLATS)
-			I_Error("Too many flats in level\n");
+			return (INT32)i; // don't crash because of this, lets just let the levels look wrong :3
 	}
 
 	// level flat id

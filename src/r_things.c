@@ -702,13 +702,13 @@ static void R_DrawVisSprite(vissprite_t *vis)
 
 	colfunc = basecolfunc; // hack: this isn't resetting properly somewhere.
 	dc_colormap = vis->colormap;
-	if ((vis->mobjflags & MF_TRANSLATION) && vis->transmap) // Color mapping
+	if ((vis->mobjflags & MF_TRANSLATION) && vis->transmap && !cv_spropt.value) // Color mapping
 	{
 		colfunc = transtransfunc;
 		dc_transmap = vis->transmap;
 		dc_translation = defaulttranslationtables - 256 + ((INT32)vis->mobj->color<<8);
 	}
-	else if (vis->transmap)
+	else if (vis->transmap && !cv_spropt.value)
 	{
 		colfunc = fuzzcolfunc;
 		dc_transmap = vis->transmap;    //Fab : 29-04-98: translucency table
@@ -1108,7 +1108,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		flip = sprframe->flip[0];
 	}
 	
-	if (cv_mobjopt.value) {
+	if (cv_mobjopt.value || cv_spropt.value) {
 		angle_t an = R_PointToAngle2(camera.x, camera.y, thing->x, thing->y) - camera.angle;
 
 		if (an > ANGLE_90 && an < ANGLE_270)
@@ -1235,7 +1235,7 @@ static void R_ProjectSprite(mobj_t *thing)
 
 		if (lightnum < 0)
 			spritelights = scalelight[0];
-		else if (lightnum >= LIGHTLEVELS)
+		else if (lightnum >= LIGHTLEVELS || cv_disablelights.value)
 			spritelights = scalelight[LIGHTLEVELS-1];
 		else
 			spritelights = scalelight[lightnum];
@@ -1327,7 +1327,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		// diminished light
 		lindex = xscale>>(LIGHTSCALESHIFT);
 
-		if (lindex >= MAXLIGHTSCALE)
+		if (lindex >= MAXLIGHTSCALE || cv_disablelights.value)
 			lindex = MAXLIGHTSCALE-1;
 
 		vis->colormap = spritelights[lindex];
@@ -1543,7 +1543,7 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 
 		if (lightnum < 0)
 			spritelights = scalelight[0];
-		else if (lightnum >= LIGHTLEVELS)
+		else if (lightnum >= LIGHTLEVELS || cv_disablelights.value)
 			spritelights = scalelight[LIGHTLEVELS-1];
 		else
 			spritelights = scalelight[lightnum];

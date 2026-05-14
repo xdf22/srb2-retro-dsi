@@ -536,7 +536,7 @@ static boolean SV_SendServerConfig(INT32 node)
 		if (debugfile)
 		{
 			fprintf(debugfile, "ServerConfig Packet about to be sent, size of packet:%u to node:%d\n",
-				(unsigned int)len, node);
+				(UINT32)len, node);
 		}
 #endif
 
@@ -1219,7 +1219,7 @@ static void Ban_Load_File(boolean warning)
 	else
 		return;
 
-	for (i=0; fgets(buffer, (int)sizeof(buffer), f); i++)
+	for (i=0; fgets(buffer, (INT32)sizeof(buffer), f); i++)
 	{
 		address = strtok(buffer, " \t\r\n");
 		mask = strtok(NULL, " \t\r\n");

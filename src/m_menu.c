@@ -84,7 +84,6 @@
 #ifdef _NDS
 #include <nds.h>
 #include <dswifi9.h>
-boolean keyboardActive = false;
 #endif
 
 #ifdef PC_DOS
@@ -508,7 +507,6 @@ typedef enum
 	switchmap,
 	secrets,
 	singleplr,
-	multiplr,
 	options,
 	addons,
 	quitdoom,
@@ -523,10 +521,9 @@ static menuitem_t MainMenu[] =
 	{IT_STRING  | IT_CALL,   NULL, "Switch Map..."    , M_MapChange,           64},
 	{IT_CALL    | IT_STRING, NULL, "secrets"          , M_SecretsMenu,         72},
 	{IT_SUBMENU | IT_STRING, NULL, "1 player"         , &SinglePlayerDef,      84},
-	{IT_SUBMENU | IT_STRING, NULL, "multiplayer"      , &MultiPlayerDef,      92},
-	{IT_CALL    | IT_STRING, NULL, "options"          , M_OptionsMenu,        100},
-	{IT_CALL    |IT_STRING,  NULL, "addons"			  , M_Addons,          	  108},
-	{IT_CALL    | IT_STRING, NULL, "quit  game"       , M_QuitSRB2,           116},
+	{IT_CALL    | IT_STRING, NULL, "options"          , M_OptionsMenu,        92},
+	{IT_CALL    |IT_STRING,  NULL, "addons"			  , M_Addons,          	  100},
+	{IT_CALL    | IT_STRING, NULL, "quit  game"       , M_QuitSRB2,           108},
 };
 
 menu_t MainDef =
@@ -761,6 +758,43 @@ const char *cv_chosenroom_motd;
 
 #define FIRSTSERVERLINE 7
 #define FIRSTLANSERVERLINE 5
+
+
+static menuitem_t OP_AddonsOptionsMenu[] =
+{
+	{IT_STRING|IT_CVAR,              NULL, "Location",                    &cv_addons_option,      10},
+	{IT_STRING|IT_CVAR|IT_CV_STRING, NULL, "Custom Folder",               &cv_addons_folder,      20},
+	{IT_STRING|IT_CVAR,              NULL, "Identify add-ons via",        &cv_addons_md5,         48},
+	{IT_STRING|IT_CVAR,              NULL, "Show unsupported file types", &cv_addons_showall,     58},
+
+	{IT_STRING|IT_CVAR,              NULL, "Matching",                    &cv_addons_search_type, 86},
+	{IT_STRING|IT_CVAR,              NULL, "Case-sensitive",              &cv_addons_search_case, 96},
+};
+
+menu_t OP_AddonsOptionsDef =
+{
+	0,
+	"Room Info",
+	sizeof (OP_AddonsOptionsMenu)/sizeof (menuitem_t),
+	&MainDef,
+	OP_AddonsOptionsMenu,
+	M_DrawGenericMenu,
+	30,40,
+	0,
+	NULL
+};
+
+enum
+{
+	op_addons_folder = 2,
+};
+
+void Addons_option_Onchange(void)
+{
+	OP_AddonsOptionsMenu[op_addons_folder].status =
+		(cv_addons_option.value == 3 ? IT_CVAR|IT_STRING|IT_CV_STRING : IT_DISABLED);
+}
+
 
 #ifndef NONET
 static void M_Connect(INT32 choice)
@@ -1105,41 +1139,6 @@ static void M_Chooseroom_Onchange(void)
 		M_AlterRoomInfo();
 	}
 #endif
-}
-
-static menuitem_t OP_AddonsOptionsMenu[] =
-{
-	{IT_STRING|IT_CVAR,              NULL, "Location",                    &cv_addons_option,      10},
-	{IT_STRING|IT_CVAR|IT_CV_STRING, NULL, "Custom Folder",               &cv_addons_folder,      20},
-	{IT_STRING|IT_CVAR,              NULL, "Identify add-ons via",        &cv_addons_md5,         48},
-	{IT_STRING|IT_CVAR,              NULL, "Show unsupported file types", &cv_addons_showall,     58},
-
-	{IT_STRING|IT_CVAR,              NULL, "Matching",                    &cv_addons_search_type, 86},
-	{IT_STRING|IT_CVAR,              NULL, "Case-sensitive",              &cv_addons_search_case, 96},
-};
-
-menu_t OP_AddonsOptionsDef =
-{
-	0,
-	"Room Info",
-	sizeof (OP_AddonsOptionsMenu)/sizeof (menuitem_t),
-	&MainDef,
-	OP_AddonsOptionsMenu,
-	M_DrawGenericMenu,
-	30,40,
-	0,
-	NULL
-};
-
-enum
-{
-	op_addons_folder = 2,
-};
-
-void Addons_option_Onchange(void)
-{
-	OP_AddonsOptionsMenu[op_addons_folder].status =
-		(cv_addons_option.value == 3 ? IT_CVAR|IT_STRING|IT_CV_STRING : IT_DISABLED);
 }
 
 //
@@ -3456,18 +3455,10 @@ static void M_Splitscreen(INT32 choice);
 
 typedef enum
 {
-#ifdef NONET
-	startsplitscreengame = 0,
-#else
 	startserver = 0,
-	connectmultiplayermenu,
 	connectlanmenu,
-	connectip,
-	startsplitscreengame,
-#endif
 	multiplayeroptions,
 	setupplayer1,
-	setupplayer2,
 	end_game,
 	multiplayer_end
 } multiplayer_e;
@@ -3476,15 +3467,11 @@ static menuitem_t MultiPlayerMenu[] =
 {
 #ifndef NONET
 	{IT_CALL | IT_STRING, NULL, "HOST GAME",              M_StartServerMenu,      10},
-	{IT_CALL | IT_STRING, NULL, "JOIN GAME (Internet)",	  M_ConnectMenu,		  20},
-	{IT_CALL | IT_STRING, NULL, "JOIN GAME (LAN)",		  M_ConnectLANMenu,       30},
-	{IT_CALL | IT_STRING, NULL, "JOIN GAME (Specify IP)", M_ConnectIPMenu,        40},
-#endif
-	{IT_CALL | IT_STRING, NULL, "TWO PLAYER GAME",        M_Splitscreen,          60},
-	{IT_CALL | IT_STRING, NULL, "NETWORK OPTIONS",        M_NetOption,            80},
+	{IT_CALL | IT_STRING, NULL, "JOIN GAME",		  	  M_ConnectLANMenu,       20},
+	{IT_CALL | IT_STRING, NULL, "END GAME",               M_EndGame,              30},
+	{IT_CALL | IT_STRING, NULL, "MULTIPLAYER OPTIONS",    M_NetOption,            80},
 	{IT_CALL | IT_STRING, NULL, "SETUP PLAYER",           M_SetupMultiPlayer,     90},
-	{IT_CALL | IT_STRING | IT_DISABLED, NULL, "SETUP PLAYER 2",         M_SetupMultiPlayerBis, 100},
-	{IT_CALL | IT_STRING, NULL, "END GAME",               M_EndGame,             120},
+#endif
 };
 
 menu_t  MultiPlayerDef =
@@ -3734,14 +3721,6 @@ static void M_DrawConnectIPMenu(void)
 // called at splitscreen changes
 void M_SwitchSplitscreen(void)
 {
-// activate setup for player 2
-	if (splitscreen)
-		MultiPlayerMenu[setupplayer2].status = IT_CALL | IT_STRING;
-	else
-		MultiPlayerMenu[setupplayer2].status = IT_DISABLED;
-
-	if (MultiPlayerDef.lastOn == setupplayer2)
-		MultiPlayerDef.lastOn = setupplayer1;
 }
 
 
@@ -5088,13 +5067,8 @@ void M_TwoPControlsMenu(INT32 choice);
 
 static menuitem_t ControlsMenu[] =
 {
-	{IT_CALL | IT_STRING, NULL, "Player 1 Controls...", M_OnePControlsMenu,  20},
-	{IT_CALL | IT_STRING, NULL, "Player 2 Controls...", M_TwoPControlsMenu,  30},
-
-	{IT_SUBMENU | IT_STRING, NULL, "Joystick Options...", &JoystickDef  ,  60},
-	{IT_SUBMENU | IT_STRING, NULL, "Mouse Options...", &MouseOptionsDef, 70},
-
-	{IT_STRING  | IT_CVAR, NULL, "Control per key", &cv_controlperkey, 100}, // Changed all to normal string Tails 11-30-2000
+	{IT_CALL | IT_STRING,    NULL, "Input Options...", M_OnePControlsMenu, 20},
+	{IT_SUBMENU | IT_STRING, NULL, "Mouse Options...", &MouseOptionsDef,   30},
 };
 
 menu_t ControlsDef =
@@ -5113,12 +5087,10 @@ menu_t ControlsDef =
 static menuitem_t OnePControlsMenu[] =
 {
 	{IT_CALL    | IT_STRING, NULL, "Control Configuration...", M_Setup1PControlsMenu,   20},
+	{IT_SUBMENU | IT_STRING, NULL, "Mouse Options...", &MouseOptionsDef,   30},
 
-	{IT_STRING  | IT_CVAR, NULL, "Camera"  , &cv_chasecam  ,  40}, // Changed all to normal string Tails 11-30-2000
-
-	{IT_STRING  | IT_CVAR, NULL, "Analog Control", &cv_useranalog,  60}, // Changed all to normal string Tails 11-30-2000
-	{IT_STRING  | IT_CVAR, NULL, "Autoaim" , &cv_autoaim   ,  80}, // Changed all to normal string Tails 11-30-2000
-	{IT_STRING  | IT_CVAR, NULL, "Crosshair", &cv_crosshair , 100}, // Changed all to normal string Tails 11-30-2000
+	{IT_STRING  | IT_CVAR, NULL, "Third Person Camera"  , &cv_chasecam  ,  50}, // Changed all to normal string Tails 11-30-2000
+	{IT_STRING  | IT_CVAR, NULL, "Analog Mode", &cv_useranalog,  60}, // Changed all to normal string Tails 11-30-2000
 };
 
 menu_t OnePControlsDef =
@@ -5126,7 +5098,7 @@ menu_t OnePControlsDef =
 	"M_OPTTTL",
 	"OPTIONS",
 	sizeof (OnePControlsMenu)/sizeof (menuitem_t),
-	&ControlsDef,
+	&OptionsDef,
 	OnePControlsMenu,
 	M_DrawGenericMenu,
 	32, 24,
@@ -5180,14 +5152,11 @@ void M_TwoPControlsMenu(INT32 choice)
 //added : 10-02-98: note: alphaKey member is the y offset
 static menuitem_t OptionsMenu[] =
 {
-	{IT_SUBMENU | IT_STRING, NULL, "Setup Controls...",     &ControlsDef,      10},
+	{IT_CALL    | IT_STRING, NULL, "Setup Controls...",     M_OnePControlsMenu,10},
 	{IT_CALL    | IT_STRING, NULL, "Game Options...",       M_GameOption,      30},
-	{IT_CALL    | IT_STRING, NULL, "Gametype Options...",   M_GametypeOptions, 40},
-	{IT_SUBMENU | IT_STRING, NULL, "Server Options...",     &ServerOptionsDef, 50},
-	{IT_SUBMENU | IT_STRING, NULL, "Sound Options...",      &SoundDef,         70},
-	{IT_SUBMENU | IT_STRING, NULL, "Video Options...",      &VideoOptionsDef,  80},
-	{IT_SUBMENU | IT_STRING, NULL, "Retro Options...", 		&RetroDef,	  	  100}, // fits here ig
-	{IT_STRING  | IT_CALL,   NULL, "Add-on Options...",     M_AddonsOptions,  110}  // this too
+	{IT_SUBMENU | IT_STRING, NULL, "Video Options...",      &VideoOptionsDef,  40},
+	{IT_SUBMENU | IT_STRING, NULL, "Sound Options...",      &SoundDef,         50},
+	{IT_SUBMENU | IT_STRING, NULL, "DSi Options...", 		&RetroDef,	  	   70},
 };
 
 menu_t OptionsDef =
@@ -5978,27 +5947,13 @@ static void M_DrawSlider(INT32 x, INT32 y, const consvar_t *cv)
 //added : 10-02-98: note: alphaKey member is the y offset
 static menuitem_t VideoOptionsMenu[] =
 {
-	// Tails
-#ifndef _NDS
-	{IT_STRING | IT_SUBMENU, NULL, "Video Modes...",      &VidModeDef,        0},
-#if defined (__unix__) || defined (UNIXCOMMON) || defined (SDL)
-	{IT_STRING|IT_CVAR,      NULL, "Fullscreen",          &cv_fullscreen,    10},
-#endif
-#if defined (HWRENDER) && defined (SHUFFLE)
-	//17/10/99: added by Hurdler
-	{IT_CALL|IT_WHITESTRING, NULL, "3D Card Options...",  M_OpenGLOption,    20},
-#endif
-#endif
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-	                         NULL, "Brightness",          &cv_usegamma,      30},
-
-	{IT_STRING | IT_CVAR,    NULL, "V-SYNC",              &cv_vidwait,       40},
-
-	{IT_STRING | IT_CVAR,	 NULL, "HOM Removal",			&cv_homremoval,	 60},
-	{IT_STRING | IT_CVAR,	 NULL, "Object Sim./Draw Dist.", &cv_objectdist,		70},
-	{IT_STRING | IT_CVAR,    NULL, "Weather Density",   &cv_precipdensity, 80}, // Changed all to normal string Tails 11-30-2000
-	{IT_STRING | IT_CVAR,    NULL, "Weather Draw Dist.", &cv_precipdist,    90}, // Changed all to normal string Tails 11-30-2000
-	{IT_STRING | IT_CVAR,    NULL, "FPS Meter",           &cv_ticrate,       100},
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Brightness",            &cv_usegamma,      0},
+	{IT_CVAR | IT_STRING,	 			 NULL, "Disable Lights",  	    &cv_disablelights, 30},
+	{IT_STRING | IT_CVAR,	 			 NULL, "H.O.M. Removal",		&cv_homremoval,	   40},
+	{IT_STRING | IT_CVAR,	 			 NULL, "Object Draw Dist.",	 	&cv_objectdist,    60},
+	{IT_STRING | IT_CVAR,    			 NULL, "Weather Density",       &cv_precipdensity, 70},
+	{IT_STRING | IT_CVAR,    			 NULL, "Weather Draw Dist.",    &cv_precipdist,    80},
+	{IT_STRING | IT_CVAR,    			 NULL, "FPS Meter",             &cv_ticrate,       100},
 };
 
 menu_t VideoOptionsDef =
@@ -6014,64 +5969,13 @@ menu_t VideoOptionsDef =
 	NULL
 };
 
-// retro options
-
-#ifdef _NDS
-static void EnableWifi(void)
-{
-	Wifi_InitDefault(WFC_CONNECT|WIFI_ATTEMPT_DSI_MODE);
-	
-	int status = Wifi_AssocStatus();
- 
-	if (status == ASSOCSTATUS_CANNOTCONNECT)
-	{
-		CONS_Printf("Couldn't connect to an Access Point!\n");
-	}
- 
-	if (status == ASSOCSTATUS_ASSOCIATED)
-	{
-		CONS_Printf("Connected to an Access Point!\n");
-	}
-}
-#endif
-
 static menuitem_t RetroMenu[] =
 {
-	#if defined(_NDS)
-	{IT_SUBMENU | IT_STRING, NULL, "DSi Optimizations...", &DSiOptsDef, 10},
-	{IT_CALL | IT_STRING, NULL, "Enable WiFi",			EnableWifi,     20},
-	#endif
-	
-	#ifdef HAVE_ANIGIF
-	{IT_CVAR | IT_STRING, NULL, "GIF Optimization",			&cv_gif_optimize,  30},
-	{IT_CVAR | IT_STRING, NULL, "GIF Downscaling", 			&cv_gif_downscale, 40},
-	#endif
+	{IT_CVAR | IT_STRING,	 NULL, "Show Keyboard",         &cv_dsikeyboard, 10},
+	{IT_CVAR | IT_STRING,	 NULL, "Show Console",          &cv_dsiconsole,  20},
+	{IT_SUBMENU | IT_STRING, NULL, "Optimizations...", 		&DSiOptsDef,     40}
 };
 
-#ifdef _NDS
-static void DrawRetroMenuDSi(void) {
-	M_DrawGenericMenu();
-	
-	V_DrawString(32, DSiOptsDef.y+40, 0, "Wifi Enabled:");
-	if (Wifi_CheckInit())
-		V_DrawString(BASEVIDWIDTH - 40, DSiOptsDef.y+40, V_GREENMAP, "Y");
-	else
-		V_DrawString(BASEVIDWIDTH - 40, DSiOptsDef.y+40, 0, "\x85N");
-}
-
-menu_t RetroDef =
-{
-	"M_OPTTTL",
-	"OPTIONS",
-	sizeof (RetroMenu)/sizeof (menuitem_t),
-	&OptionsDef,
-	RetroMenu,
-	DrawRetroMenuDSi,
-	32, 40,
-	0,
-	NULL
-};
-#else
 menu_t RetroDef =
 {
 	"M_OPTTTL",
@@ -6084,23 +5988,24 @@ menu_t RetroDef =
 	0,
 	NULL
 };
-#endif
 
 #if defined(_NDS)
 static menuitem_t DSiOptsMenu[] =
 {
-	{IT_CVAR | IT_STRING, NULL, "Mobj Opts.",     		&cv_mobjopt,    10},
-	{IT_CVAR | IT_STRING, NULL, "Texture Opts.",     	&cv_texopt,     20},
-	{IT_CVAR | IT_STRING, NULL, "Polyobject Opts.",     &cv_pobjopt,    30},
-	{IT_CVAR | IT_STRING, NULL, "Scr. Downscale",		&cv_screendiv,  70},
-	{IT_CVAR | IT_STRING, NULL, "Limited Draw",     	&cv_limiteddraw,80},
+	{IT_CVAR | IT_STRING, NULL, "Mobj Opts.",     		&cv_mobjopt,       10},
+	{IT_CVAR | IT_STRING, NULL, "Texture Opts.",     	&cv_texopt,        20},
+	{IT_CVAR | IT_STRING, NULL, "Polyobject Opts.",     &cv_pobjopt,       30},
+	{IT_CVAR | IT_STRING, NULL, "Sprite Opts.",  	    &cv_spropt,        40},
+	{IT_CVAR | IT_STRING, NULL, "Remove Scenery",  	    &cv_noscenery,     50},
+	{IT_CVAR | IT_STRING, NULL, "Scr. Downscale",		&cv_screendiv,     90},
+	{IT_CVAR | IT_STRING, NULL, "Limited Draw",     	&cv_limiteddraw,   100}
 };
 
 static void DrawDSiOpts(void)
 {
 	M_DrawGenericMenu();
 
-	V_DrawCenteredString(BASEVIDWIDTH/2, DSiOptsDef.y+50, 0, "\x85""Experimental");
+	V_DrawCenteredString(BASEVIDWIDTH/2, DSiOptsDef.y+70, 0, "\x85""Experimental");
 }
 
 menu_t DSiOptsDef =
@@ -6140,7 +6045,7 @@ menu_t MouseOptionsDef =
 	"M_OPTTTL",
 	"OPTIONS",
 	sizeof (MouseOptionsMenu)/sizeof (menuitem_t),
-	&OptionsDef,
+	&OnePControlsDef,
 	MouseOptionsMenu,
 	M_DrawGenericMenu,
 	32, 40,
@@ -6156,15 +6061,12 @@ static menuitem_t GameOptionsMenu[] =
 {
 	// Tails
 	{IT_STRING | IT_CVAR, NULL, "Show HUD",    &cv_showhud,       20},
-#ifdef SEENAMES
-	{IT_STRING | IT_CVAR, NULL, "HUD Player Names",    &cv_seenames,       30},
-#endif
-	{IT_STRING | IT_CVAR, NULL, "High Resolution Timer",    &cv_timetic,       40},
+	{IT_STRING | IT_CVAR, NULL, "High Resolution Timer",    &cv_timetic,       30},
 
-	{IT_STRING | IT_CVAR, NULL, "Console Color", &cons_backcolor, 60},
-	{IT_STRING | IT_CVAR, NULL, "Uppercase Console", &cv_allcaps, 70},
+	{IT_STRING | IT_CVAR, NULL, "Console Color", &cons_backcolor, 50},
+	{IT_STRING | IT_CVAR, NULL, "Uppercase Console", &cv_allcaps, 60},
 
-	{IT_STRING | IT_SUBMENU, NULL, "Data Options...", &DataOptionsDef, 90},
+	{IT_STRING | IT_SUBMENU, NULL, "Data Options...", &DataOptionsDef, 80},
 };
 
 menu_t GameOptionDef =
@@ -6615,33 +6517,6 @@ static void M_ToggleDigital(void)
 	}
 }
 
-static void M_ToggleMIDI(void)
-{
-	if (nomidimusic)
-	{
-		nomidimusic = false;
-		I_InitMIDIMusic();
-		if (nomidimusic) return;
-		S_Init(cv_soundvolume.value, cv_digmusicvolume.value, cv_midimusicvolume.value);
-		S_ChangeMusic(mus_lclear, false);
-		M_StartMessage("MIDI Music Enabled\n", NULL, MM_NOTHING);
-	}
-	else
-	{
-		if (music_disabled)
-		{
-			music_disabled = false;
-			M_StartMessage("MIDI Music Enabled\n", NULL, MM_NOTHING);
-		}
-		else
-		{
-			music_disabled = true;
-			S_StopMusic();
-			M_StartMessage("MIDI Music Disabled\n", NULL, MM_NOTHING);
-		}
-	}
-}
-
 //===========================================================================
 //                        SOUND VOLUME MENU
 //===========================================================================
@@ -6652,15 +6527,8 @@ typedef enum
 	sfx_empty1,
 	digmusic_vol,
 	sfx_empty2,
-	midimusic_vol,
-	sfx_empty3,
-#ifdef PC_DOS
-	cdaudio_vol,
-	sfx_empty4,
-#endif
 	tog_sfx,
 	tog_dig,
-	tog_midi,
 	sound_end
 } sound_e;
 
@@ -6670,15 +6538,8 @@ static menuitem_t SoundMenu[] =
                               NULL, "Sound Volume" , &cv_soundvolume,     0},
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
                               NULL, "Music Volume" , &cv_digmusicvolume,  10},
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-                              NULL, "MIDI Volume"  , &cv_midimusicvolume, 20},
-#ifdef PC_DOS
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER,
-                              NULL, "CD Volume"    , &cd_volume,          30},
-#endif
-	{IT_STRING    | IT_CALL,  NULL,  "Toggle SFX"   , M_ToggleSFX,         40},
-	{IT_STRING    | IT_CALL,  NULL,  "Toggle Digital Music", M_ToggleDigital,     50},
-	{IT_STRING    | IT_CALL,  NULL,  "Toggle MIDI Music", M_ToggleMIDI,        60},
+	{IT_STRING    | IT_CALL,  NULL,  "Toggle SFX"  , M_ToggleSFX,         30},
+	{IT_STRING    | IT_CALL,  NULL,  "Toggle Music", M_ToggleDigital,     40},
 };
 
 menu_t SoundDef =
@@ -8279,86 +8140,7 @@ boolean M_Responder(event_t *ev)
 				shiftdown = true;
 				break; //return false;
 			case KEY_MOUSE1:
-			case KEY_JOY1:
-			case KEY_JOY1 + 2:
-				ch = KEY_ENTER;
-				break;
-			case KEY_JOY1 + 3:
-				ch = 'n';
-				break;
 			case KEY_MOUSE1 + 1:
-			case KEY_JOY1 + 1:
-				ch = KEY_BACKSPACE;
-				break;
-			case KEY_HAT1:
-				ch = KEY_UPARROW;
-				break;
-			case KEY_HAT1 + 1:
-				ch = KEY_DOWNARROW;
-				break;
-			case KEY_HAT1 + 2:
-				ch = KEY_LEFTARROW;
-				break;
-			case KEY_HAT1 + 3:
-				ch = KEY_RIGHTARROW;
-				break;
-		}
-	}
-	else if (menuactive)
-	{
-		if (ev->type == ev_joystick  && ev->data1 == 0 && joywait < I_GetTime())
-		{
-			if (ev->data3 == -1)
-			{
-				ch = KEY_UPARROW;
-				joywait = I_GetTime() + TICRATE/7;
-			}
-			else if (ev->data3 == 1)
-			{
-				ch = KEY_DOWNARROW;
-				joywait = I_GetTime() + TICRATE/7;
-			}
-
-			if (ev->data2 == -1)
-			{
-				ch = KEY_LEFTARROW;
-				joywait = I_GetTime() + TICRATE/17;
-			}
-			else if (ev->data2 == 1)
-			{
-				ch = KEY_RIGHTARROW;
-				joywait = I_GetTime() + TICRATE/17;
-			}
-		}
-		else if (ev->type == ev_mouse && mousewait < I_GetTime())
-		{
-			pmousey += ev->data3;
-			if (pmousey < lasty-30)
-			{
-				ch = KEY_DOWNARROW;
-				mousewait = I_GetTime() + TICRATE/7;
-				pmousey = lasty -= 30;
-			}
-			else if (pmousey > lasty + 30)
-			{
-				ch = KEY_UPARROW;
-				mousewait = I_GetTime() + TICRATE/7;
-				pmousey = lasty += 30;
-			}
-
-			pmousex += ev->data2;
-			if (pmousex < lastx - 30)
-			{
-				ch = KEY_LEFTARROW;
-				mousewait = I_GetTime() + TICRATE/7;
-				pmousex = lastx -= 30;
-			}
-			else if (pmousex > lastx+30)
-			{
-				ch = KEY_RIGHTARROW;
-				mousewait = I_GetTime() + TICRATE/7;
-				pmousex = lastx += 30;
-			}
 		}
 	}
 
@@ -8440,22 +8222,8 @@ boolean M_Responder(event_t *ev)
 		if (shiftdown && ch >= 32 && ch <= 127)
 			ch = shiftxform[ch];
 		routine(ch);
-#ifdef _NDS
-		if (!keyboardActive)
-		{
-			keyboardShow();
-			keyboardActive = true;
-		}
-#endif
 		return true;
 	}
-#ifdef _NDS
-	else if (keyboardActive)
-	{
-		keyboardHide();
-		keyboardActive = false;
-	}
-#endif
 
 	if (currentMenu->menuitems[itemOn].status == IT_MSGHANDLER)
 	{

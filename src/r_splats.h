@@ -26,7 +26,7 @@
 #define FLOORSPLATS
 #endif*/
 
-#define MAXLEVELSPLATS      1024
+#define MAXLEVELSPLATS      512
 
 // splat flags
 #define SPLATDRAWMODE_MASK 0x03 // mask to get drawmode from flags

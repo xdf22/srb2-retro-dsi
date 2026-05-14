@@ -13,9 +13,13 @@
 #include "../i_video.h"
 #include "../i_sound.h"
 #include "../i_joy.h"
+#include "../r_main.h" // hack for cvars
 #include "../z_zone.h"
 
 UINT8 keyboard_started = 0;
+consvar_t cv_dsikeyboard = {"dsikeyboard", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+consvar_t cv_dsiconsole = {"dsiconsole", "On", CV_SAVE, CV_OnOff, NULL, 0, NULL, NULL, 0, 0, NULL};
+
 
 static volatile tic_t ticcount;
 
@@ -56,13 +60,95 @@ UINT32 I_GetFreeMem(UINT32 *total)
 	return 12*1024*1024;
 }
 
+static UINT16 ds_to_arrowkeys[4] = {
+	KEY_LEFTARROW,
+	KEY_DOWNARROW,
+	KEY_RIGHTARROW,
+	KEY_UPARROW
+};
+
+INT16 curkey = NOKEY;
+
+static void handleKeyboard(boolean keydown)
+{
+	// keyboard
+	if (curkey != NOKEY)
+	{
+		event_t event;
+		
+		if (keydown)
+			event.type = ev_keydown;
+		else
+			event.type = ev_keyup;
+		
+		switch (curkey) {
+			case DVK_MENU:
+				event.data1 = KEY_ESCAPE;
+				break;
+			case DVK_TAB:
+				event.data1 = KEY_TAB;
+				break;
+			case DVK_ENTER:
+				event.data1 = KEY_ENTER;
+				break;
+			case DVK_BACKSPACE:
+				event.data1 = KEY_BACKSPACE;
+				break;
+			case DVK_CTRL:
+				event.data1 = KEY_LCTRL;
+				break;
+			case DVK_ALT:
+				event.data1 = KEY_LALT;
+				break;
+			case DVK_UP:
+			case DVK_DOWN:
+			case DVK_LEFT:
+			case DVK_RIGHT:
+				event.data1 = ds_to_arrowkeys[curkey+20];
+				break;
+			default:
+				if (curkey >= DVK_SPACE)
+					event.data1 = curkey;
+				break;
+		}
+		
+		D_PostEvent(&event);
+	}
+}
+
+boolean keyboardActive = true;
+boolean consoleActive = true;
+
 void I_GetEvent(void)
 {
     static touchPosition last_touch_position;
 	scanKeys();
 	u16 keys = keysDown();
-	
 	event_t e_w;
+	
+	if (cv_dsikeyboard.value) {
+		if (!keyboardActive) {
+			keyboardShow();
+			keyboardActive = true;
+		}
+	} else
+		if (keyboardActive) {
+			keyboardHide();
+			keyboardActive = false;
+		}
+		
+	if (cv_dsiconsole.value) {
+		if (!consoleActive) {
+			consoleSetWindow(&gameConsole, 0, 0, 32, 14);
+			consoleSetCursor(&gameConsole, 0, 0);
+			consoleActive = true;
+		}
+	} else
+		if (consoleActive) {
+			consoleClear();
+			consoleSetWindow(&gameConsole, 0, -1, 0, 0);
+			consoleActive = false;
+		}
 
 	if (keys & KEY_A) {
 		event_t event;
@@ -158,7 +244,7 @@ void I_GetEvent(void)
 	}
 
     // lowk took this from srb2_3ds
-	if(keysHeld() & KEY_TOUCH) {
+	if (keysHeld() & KEY_TOUCH) {
         event_t event;
 		touchPosition current_touch_position;
 		touchRead(&current_touch_position);
@@ -168,7 +254,11 @@ void I_GetEvent(void)
 			event.data2 = (current_touch_position.px - last_touch_position.px);
 			event.data3 = -(current_touch_position.py - last_touch_position.py);
 			D_PostEvent(&event);
+		} else {
+			curkey = keyboardGetKey(current_touch_position.px, current_touch_position.py);
+			handleKeyboard(true);
 		}
+		
 		last_touch_position = current_touch_position;
 	}
 	
@@ -266,37 +356,11 @@ void I_GetEvent(void)
 
 		D_PostEvent(&event);
 	}
-
-	// keyboard
-	int16_t c = keyboardUpdate();
-	if (c != -1)
-	{
-		event_t event;
-
-		// backspace
-		if (c == '\b')
-		{
-			event.type = ev_keydown;
-			event.data1 = KEY_BACKSPACE;
-			D_PostEvent(&event);
-
-			event.type = ev_keyup;
-			event.data1 = KEY_BACKSPACE;
-			D_PostEvent(&event);
-		}
-		else if (c >= 32)
-		{
-			// key down
-			event.type = ev_keydown;
-			event.data1 = c;
-			D_PostEvent(&event);
-
-			// key up
-			event.type = ev_keyup;
-			event.data1 = c;
-			D_PostEvent(&event);
-		}
-	}
+	
+	if (keys & KEY_TOUCH)
+		handleKeyboard(false);
+	
+	keyboardUpdate(); // literally only here so the keyboard anims :3
 }
 
 void I_OsPolling(void)

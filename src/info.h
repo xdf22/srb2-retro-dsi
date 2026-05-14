@@ -3052,19 +3052,19 @@ typedef enum
 typedef struct
 {
 	INT32 doomednum;
-	statenum_t spawnstate;
+	uint32_t spawnstate;
 	INT32 spawnhealth;
-	statenum_t seestate;
+	uint32_t seestate;
 	sfxenum_t seesound;
 	INT32 reactiontime;
 	sfxenum_t attacksound;
-	statenum_t painstate;
+	uint32_t painstate;
 	INT32 painchance;
 	sfxenum_t painsound;
-	statenum_t meleestate;
-	statenum_t missilestate;
-	statenum_t deathstate;
-	statenum_t xdeathstate;
+	uint32_t meleestate;
+	uint32_t missilestate;
+	uint32_t deathstate;
+	uint32_t xdeathstate;
 	sfxenum_t deathsound;
 	fixed_t speed;
 	fixed_t radius;
@@ -3074,7 +3074,7 @@ typedef struct
 	INT32 damage;
 	sfxenum_t activesound;
 	INT32 flags;
-	statenum_t raisestate;
+	uint32_t raisestate;
 } mobjinfo_t;
 
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];

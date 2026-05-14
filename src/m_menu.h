@@ -138,12 +138,12 @@ typedef struct menu_s
 {
 	const char    *menutitlepic;
 	const char    *menutitle;          // title as string for display with fontb if present
-	INT16          numitems;           // # of menu items
+	UINT8          numitems;           // # of menu items
 	struct menu_s *prevMenu;           // previous menu
 	menuitem_t    *menuitems;          // menu items
 	void         (*drawroutine)(void); // draw routine
-	INT16          x, y;               // x, y of menu
-	INT16          lastOn;             // last item user was on in menu
+	UINT16          x, y;               // x, y of menu
+	UINT8          lastOn;             // last item user was on in menu
 	boolean      (*quitroutine)(void); // called before quit a menu return true if we can
 } menu_t;
 

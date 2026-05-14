@@ -74,17 +74,6 @@ typedef INT32 ssize_t;
 #define UINT32 unsigned long
 #define INT64  signed long long
 #define UINT64 unsigned long long
-#elif defined (_NDS)
-#define UINT8 unsigned char
-#define SINT8 signed char
-
-#define UINT16 unsigned short
-#define INT16 short
-
-#define INT32 int
-#define UINT32 unsigned int
-#define INT64  signed long long
-#define UINT64 unsigned long long
 #else
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>

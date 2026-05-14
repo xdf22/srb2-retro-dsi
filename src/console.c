@@ -111,7 +111,7 @@ static void CON_DrawBackpic(patch_t *pic, INT32 startx, INT32 destwidth);
 //======================================================================
 //                   CONSOLE VARS AND COMMANDS
 //======================================================================
-#ifdef macintosh
+#if defined(macintosh) || defined(_NDS)
 #define CON_BUFFERSIZE 4096 // my compiler can't handle local vars >32k
 #else
 #define CON_BUFFERSIZE 16384

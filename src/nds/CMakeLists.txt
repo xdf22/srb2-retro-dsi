@@ -1,6 +1,6 @@
 add_executable(SRB2DSI)
 
-target_link_libraries(SRB2DSI mm9 dswifi9)
+target_link_libraries(SRB2DSI mm9)
 
 set (SRB2_NDS_SOURCES
     i_main.c

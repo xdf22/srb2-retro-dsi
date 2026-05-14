@@ -81,17 +81,17 @@ typedef struct viddef_s
 
 	UINT8 *buffer; // invisible screens buffer
 	size_t rowbytes; // bytes per scanline of the VIDEO mode
-	INT32 width; // PIXELS per scanline
-	INT32 height;
+	INT16 width; // PIXELS per scanline
+	INT16 height;
 	union { // don't need numpages for OpenGL, so we can use it for fullscreen/windowed mode
 		INT32 numpages; // always 1, page flipping todo
 		INT32 windowed; // windowed or fullscren mode?
 	} u;
-	INT32 recalc; // if true, recalc vid-based stuff
+	INT16 recalc; // if true, recalc vid-based stuff
 	UINT8 *direct; // linear frame buffer, or vga base mem.
-	INT32 dupx, dupy; // scale 1, 2, 3 value for menus & overlays
+	INT16 dupx, dupy; // scale 1, 2, 3 value for menus & overlays
 	float fdupx, fdupy; // same as dupx, dupy, but exact value when aspect ratio isn't 320/200
-	INT32 bpp; // BYTES per pixel: 1 = 256color, 2 = highcolor
+	INT16 bpp; // BYTES per pixel: 1 = 256color, 2 = highcolor
 
 	INT32 baseratio; // Used to get the correct value for lighting walls
 
@@ -113,9 +113,9 @@ typedef struct vmode_s
 {
 	struct vmode_s *pnext;
 	char *name;
-	UINT32 width, height;
-	UINT32 rowbytes; // bytes per scanline
-	UINT32 bytesperpixel; // 1 for 256c, 2 for highcolor
+	UINT16 width, height;
+	UINT16 rowbytes; // bytes per scanline
+	UINT16 bytesperpixel; // 1 for 256c, 2 for highcolor
 	INT32 windowed; // if true this is a windowed mode
 	INT32 numpages;
 	vesa_extra_t *pextradata; // vesa mode extra data

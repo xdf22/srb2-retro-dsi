@@ -31,9 +31,7 @@
 // Screen 0 is the screen updated by I_Update screen.
 // Screen 1 is an extra buffer.
 
-extern UINT8 *screens[5];
-
-extern const UINT8 gammatable[5][256];
+extern UINT8 *screens[NUMSCREENS];
 extern consvar_t cv_ticrate, cv_usegamma, cv_allcaps;
 
 // Allocates buffer screens, call before R_Init.
@@ -135,7 +133,7 @@ void V_DoPostProcessor(postimg_t type);
 
 void V_DrawPatchFill(patch_t *pat);
 
-void VID_BlitLinearScreen(const UINT8 *srcptr, UINT8 *destptr, INT32 width, INT32 height, size_t srcrowbytes,
+void VID_BlitLinearScreen(const UINT8 *srcptr, UINT8 *destptr, UINT16 width, UINT16 height, size_t srcrowbytes,
 	size_t destrowbytes);
 
 #endif

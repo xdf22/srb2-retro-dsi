@@ -21,6 +21,8 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
+#define NONET
+
 #ifdef _WINDOWS
 #if !defined (HWRENDER) && !defined (NOHW)
 #define HWRENDER

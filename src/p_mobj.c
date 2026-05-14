@@ -6617,7 +6617,7 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 	else
 		mobj->z = z;
 
-	if (!(mobj->type & MF_NOTHINK))
+	if (!(mobj->flags & MF_NOTHINK))
 	{
 		mobj->thinker.function = (actionf_p1)P_MobjThinker;
 		P_AddThinker(&mobj->thinker);
@@ -7442,6 +7442,9 @@ void P_SpawnMapThing(mapthing_t *mthing)
 
 		return;
 	}
+	
+	if ((mobjinfo[i].flags & (MF_SCENERY|MF_NOTHINK)) && cv_noscenery.value)
+		return;
 
 	if (i >= MT_EMERALD1 && i <= MT_EMERALD7) // Pickupable Emeralds
 	{
@@ -8016,6 +8019,9 @@ ML_NOCLIMB : Direction not controllable
 			bflagpoint = mobj->spawnpoint;
 		}
 	}
+	
+	if ((mobjinfo[i].flags & MF_SCENERY) && cv_mobjopt.value)
+		mobj->flags |= MF_NOTHINK|MF_NOBLOCKMAP;
 
 	// special push/pull stuff
 	if (i == MT_PUSH || i == MT_PULL)
