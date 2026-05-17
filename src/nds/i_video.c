@@ -90,7 +90,7 @@ INT32 VID_SetMode(INT32 modenum)
 
     memset(vid.buffer, 0, vid.width*vid.height);
 	
-	videoSetMode(MODE_VRAM_A);
+    videoSetMode(MODE_VRAM_A);
     vramSetBankA(VRAM_A_LCD);
 
 	return 0;
@@ -108,46 +108,12 @@ void I_FinishUpdate(void)
 {
     u16* framebuffer = (u16*)VRAM_A;
 
-    const int src_w = vid.width;
-    const int src_h = vid.height;
-    const int dst_w = 256;
-    const int dst_h = 192;
-
     if (cv_ticrate.value)
-	    SCR_DisplayTicRate();
+        SCR_DisplayTicRate();
 
-    if (cv_fullscreen.value) // squished
+    for (int i = 0; i < 256 * 192; i++)
     {
-        for (int y = 0; y < dst_h; y++)
-        {
-            int src_y = (y * src_h) / dst_h;
-
-            for (int x = 0; x < dst_w; x++)
-            {
-                int src_x = (x * src_w) / dst_w;
-
-                framebuffer[y * dst_w + x] =
-                    ds_palette[vid.buffer[src_y * src_w + src_x]];
-            }
-        }
-    }
-    else // cropped
-    {
-        int x_offset = (src_w - dst_w) / 2; // 32
-        int y_offset = (src_h - dst_h) / 2; // 4
-
-        for (int y = 0; y < dst_h; y++)
-        {
-            int src_y = y + y_offset;
-
-            for (int x = 0; x < dst_w; x++)
-            {
-                int src_x = x + x_offset;
-
-                framebuffer[y * dst_w + x] =
-                    ds_palette[vid.buffer[src_y * src_w + src_x]];
-            }
-        }
+        framebuffer[i] = ds_palette[vid.buffer[i]];
     }
 }
 
