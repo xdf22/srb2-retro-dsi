@@ -116,8 +116,23 @@ UINT8 sound_started = 0;
 
 void *I_GetSfx(sfxinfo_t *sfx)
 {
-	(void)sfx;
-	return NULL;
+#ifdef DSI_SFX
+	if (sfx->data)
+		return sfx->data;
+
+	char name[9];
+	snprintf(name, sizeof(name), "ds%s", sfx->name);
+	strupr(name);
+
+	INT32 lump = W_CheckNumForName(name);
+	if (lump == LUMPERROR)
+		return NULL;
+
+	sfx->data = W_CacheLumpNum(lump, PU_SOUND);
+	sfx->length = W_LumpLength(lump);
+
+	return sfx->data;
+#endif
 }
 
 void I_FreeSfx(sfxinfo_t *sfx)
@@ -125,7 +140,11 @@ void I_FreeSfx(sfxinfo_t *sfx)
 	(void)sfx;
 }
 
-void I_StartupSound(void){
+void I_StartupSound(void)
+{
+#ifdef DSI_SFX
+	sound_started = true;
+#endif
 }
 
 void I_ShutdownSound(void){}
@@ -133,16 +152,37 @@ void I_ShutdownSound(void){}
 //
 //  SFX I/O
 //
-
+mm_stream sfxstream;
 INT32 I_StartSound(sfxenum_t id, INT32 vol, INT32 sep, INT32 pitch, INT32 priority)
 {
-	return -1;
-	//return soundPlaySample(S_sfx[id].data, SoundFormat_8Bit, S_sfx[id].length, 8000, 127, 0, false, 0);
+#ifdef DSI_SFX
+	(void)priority;
+
+	if (!S_sfx[id].data)
+		return -1;
+
+	wavData = S_sfx[id].data;
+	wavLen = S_sfx[id].length;
+
+	sfxstream.sampling_rate = 8000,
+    sfxstream.buffer_length = S_sfx[id].length,
+    sfxstream.callback      = streamingCallback,
+    sfxstream.format        = MM_STREAM_8BIT_MONO,
+    sfxstream.timer         = MM_TIMER3,
+    sfxstream.manual        = false,
+
+	srb2_loopsong = false;
+	srb2_playsong = true;
+
+	mmStreamOpen(&sfxstream);
+#endif
 }
 
 void I_StopSound(INT32 handle)
 {
-	(void)handle;
+#ifdef DSI_SFX
+	srb2_playsong = false;
+#endif
 }
 
 INT32 I_SoundIsPlaying(INT32 handle)

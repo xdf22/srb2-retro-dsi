@@ -871,6 +871,11 @@ static void IdentifyVersion(void)
 	D_AddFile(va(pandf,srb2waddir,text[TAILSPLR])); //tails.plr
 	D_AddFile(va(pandf,srb2waddir,text[KNUXPLR])); //knux.plr
 
+#ifdef DSI_SFX
+	// we dont wanna modify the iwad, so converted sfx is in "sfx.dta"
+	D_AddFile(va(pandf,srb2waddir,"sfx.dta")); //sfx.dta
+#endif
+
 #ifndef _PSP // PSPDEV's CRT haves a limit of 16 files opened at a time
 	// Add the weapons
 	D_AddFile(va(pandf,srb2waddir,"rings.wpn")); //rings.wpn
